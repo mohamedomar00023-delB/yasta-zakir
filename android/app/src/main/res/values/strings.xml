@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Yasta Zakir</string>
+    <string name="title_activity_main">Yasta Zakir</string>
+    <string name="package_name">com.yasta.zakir</string>
+    <string name="custom_url_scheme">com.yasta.zakir</string>
+</resources>
