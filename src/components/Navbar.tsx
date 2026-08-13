@@ -261,15 +261,15 @@ export const Navbar: React.FC = () => {
               <Palette className="w-4 h-4 text-amber-400" />
             </button>
 
-            {/* Backup Button (Desktop & Tablet) */}
+            {/* Backup Button (Available on all devices) */}
             <button
               onClick={() => {
                 haptic.light();
                 setIsBackupModalOpen(true);
               }}
-              className="p-1.5 sm:p-2 rounded-xl border transition-colors hidden sm:inline-flex active:scale-95"
+              className="p-1.5 sm:p-2 rounded-xl border transition-colors flex items-center justify-center active:scale-95"
               style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)' }}
-              title={isAr ? 'نسخ احتياطي واسترجاع البيانات' : 'Backup & Restore'}
+              title={isAr ? 'نسخ احتياطي واسترجاع البيانات 💾' : 'Backup & Restore 💾'}
             >
               <Database className="w-4 h-4 text-indigo-400" />
             </button>
