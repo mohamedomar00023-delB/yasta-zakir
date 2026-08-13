@@ -14,6 +14,7 @@ import { DEFAULT_PROFILE, INITIAL_LESSONS, INITIAL_TASKS } from '../utils/preset
 import { playSuccessPing } from '../utils/sound';
 import { THEME_CONFIGS } from '../utils/themes';
 import { getTranslation, translations } from '../utils/i18n';
+import { haptic } from '../utils/haptics';
 
 export type ActiveTabType = 'today' | 'weekly' | 'calendar' | 'tasks' | 'notes';
 
@@ -92,6 +93,8 @@ interface AppContextType {
   setIsAchievementsModalOpen: (open: boolean) => void;
   isStudentStoryModalOpen: boolean;
   setIsStudentStoryModalOpen: (open: boolean) => void;
+  isAppTourOpen: boolean;
+  setIsAppTourOpen: (open: boolean) => void;
 
   // Backup & Restore
   exportBackupData: () => AppBackupData;
@@ -249,6 +252,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [isAthkarModalOpen, setIsAthkarModalOpen] = useState<boolean>(false);
   const [isAchievementsModalOpen, setIsAchievementsModalOpen] = useState<boolean>(false);
   const [isStudentStoryModalOpen, setIsStudentStoryModalOpen] = useState<boolean>(false);
+  const [isAppTourOpen, setIsAppTourOpen] = useState<boolean>(false);
 
   // Toast system
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'warning' | 'info' } | null>(null);
@@ -259,6 +263,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, []);
 
   const triggerCelebration = useCallback(() => {
+    haptic.celebration();
     if (settings.soundEnabled) {
       playSuccessPing();
     }
@@ -430,11 +435,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setTasks(prev => prev.map(t => {
       if (t.id === id) {
         const nextCompleted = !t.completed;
+        const taskXP = t.priority === 'high' ? 25 : t.priority === 'medium' ? 15 : 10;
         if (nextCompleted) {
           triggerCelebration();
-          addXP(20, settings.language === 'en' ? 'Task completion' : 'تسليم الواجب');
+          addXP(taskXP, settings.language === 'en' ? 'Task completion' : 'تسليم الواجب');
         } else {
-          deductXP(20);
+          deductXP(taskXP);
         }
         return { ...t, completed: nextCompleted };
       }
@@ -477,9 +483,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const nextCompleted = !p.completed;
         if (nextCompleted) {
           triggerCelebration();
-          addXP(25, settings.language === 'en' ? 'Study session completed' : 'إنجاز جلسة مذاكرة');
+          addXP(20, settings.language === 'en' ? 'Study session completed' : 'إنجاز جلسة مذاكرة');
         } else {
-          deductXP(25);
+          deductXP(20);
         }
         return { ...p, completed: nextCompleted };
       }
@@ -514,9 +520,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const nextState = !prev[key];
       if (nextState) {
         triggerCelebration();
-        addXP(10, settings.language === 'en' ? 'Prayer fulfilled' : 'أداء الصلاة');
+        addXP(15, settings.language === 'en' ? 'Prayer fulfilled' : 'أداء الصلاة');
       } else {
-        deductXP(10);
+        deductXP(15);
       }
       return { ...prev, [key]: nextState };
     });
@@ -630,6 +636,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setIsAchievementsModalOpen,
         isStudentStoryModalOpen,
         setIsStudentStoryModalOpen,
+        isAppTourOpen,
+        setIsAppTourOpen,
 
         exportBackupData,
         importBackupData,

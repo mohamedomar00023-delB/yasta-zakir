@@ -29,13 +29,14 @@ import { ThemeSelectorModal } from './components/settings/ThemeSelectorModal';
 import { AthkarModal } from './components/athkar/AthkarModal';
 import { AchievementsModal } from './components/achievements/AchievementsModal';
 import { StudentStoryShareModal } from './components/dashboard/StudentStoryShareModal';
+import { AppTourModal } from './components/guide/AppTourModal';
 import { ToastNotification } from './components/ui/ToastNotification';
 
 import { getArabicFormattedDate, getEnglishFormattedDate, getTodayDateString } from './utils/formatters';
 import { Sparkles, Heart, Moon } from 'lucide-react';
 
 const DashboardContent: React.FC = () => {
-  const { profile, lessons, tasks, settings, activeTab, t } = useApp();
+  const { profile, lessons, tasks, settings, activeTab, isAppTourOpen, setIsAppTourOpen, t } = useApp();
   const currentDayId = new Date().getDay();
   const todayStr = getTodayDateString();
   const isAr = settings.language !== 'en';
@@ -199,6 +200,7 @@ const DashboardContent: React.FC = () => {
       {/* Modals & Toasts */}
       <OnboardingModal />
       <EditProfileModal />
+      <AppTourModal isOpen={isAppTourOpen} onClose={() => setIsAppTourOpen(false)} />
       <LessonFormModal />
       <TaskFormModal />
       <WeeklyStatsModal />

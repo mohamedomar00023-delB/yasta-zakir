@@ -9,18 +9,18 @@ export const StudentRankBadge: React.FC = () => {
   const xp = profile.xpPoints || 0;
   const streak = profile.streakDays || 1;
 
-  // 10-Tier Academic Ranks
+  // 10-Tier Balanced Academic Ranks
   const TIERS = [
-    { min: 0, max: 150, num: 1, nameAr: 'المستوى 1: طالب مجتهد 🎓', nameEn: 'Level 1: Novice Scholar 🎓', color: 'from-slate-600 to-indigo-600', tierBadge: '🥉 برونزي' },
-    { min: 150, max: 350, num: 2, nameAr: 'المستوى 2: باحث نشيط ⚡', nameEn: 'Level 2: Active Explorer ⚡', color: 'from-blue-600 to-indigo-600', tierBadge: '🥈 فضي' },
-    { min: 350, max: 700, num: 3, nameAr: 'المستوى 3: مواظب متفوق 📚', nameEn: 'Level 3: Consistent Achiever 📚', color: 'from-emerald-600 to-teal-600', tierBadge: '🥇 ذهبي' },
-    { min: 700, max: 1200, num: 4, nameAr: 'المستوى 4: نجم الدفعة 🌟', nameEn: 'Level 4: Class Luminary 🌟', color: 'from-cyan-500 to-blue-600', tierBadge: '💎 بلاتينيوم' },
-    { min: 1200, max: 2000, num: 5, nameAr: 'المستوى 5: وحش التركيز 🔥', nameEn: 'Level 5: Focus Titan 🔥', color: 'from-amber-500 to-orange-600', tierBadge: '💠 ياقوتي' },
-    { min: 2000, max: 3200, num: 6, nameAr: 'المستوى 6: عقلية علمية فذة 🧠', nameEn: 'Level 6: Master Strategist 🧠', color: 'from-purple-600 to-pink-600', tierBadge: '🔮 ماستر' },
-    { min: 3200, max: 4800, num: 7, nameAr: 'المستوى 7: دحّاح أسطوري 👑', nameEn: 'Level 7: Academic Legend 👑', color: 'from-rose-600 via-purple-600 to-indigo-600', tierBadge: '👑 جراند ماستر' },
-    { min: 4800, max: 7000, num: 8, nameAr: 'المستوى 8: القمة والامتياز 💎', nameEn: 'Level 8: Apex Scholar 💎', color: 'from-amber-400 via-rose-500 to-purple-700', tierBadge: '💎 ماسي نقي' },
-    { min: 7000, max: 10000, num: 9, nameAr: 'المستوى 9: عبقري الكلية 🚀', nameEn: 'Level 9: Grand Master 🚀', color: 'from-yellow-400 via-amber-500 to-red-600', tierBadge: '🚀 ملك الأوائل' },
-    { min: 10000, max: 99999, num: 10, nameAr: 'المستوى 10: أسطورة يسطا ذاكر الخالدة 🏆', nameEn: 'Level 10: Immortal Legend 🏆', color: 'from-amber-300 via-yellow-500 to-amber-600', tierBadge: '🏆 أسطورة خالدة' },
+    { min: 0, max: 250, num: 1, nameAr: 'المستوى 1: طالب مبتدئ 🎓', nameEn: 'Level 1: Novice Scholar 🎓', color: 'from-slate-600 to-indigo-600', tierBadge: '🥉 برونزي' },
+    { min: 250, max: 650, num: 2, nameAr: 'المستوى 2: باحث نشيط ⚡', nameEn: 'Level 2: Active Explorer ⚡', color: 'from-blue-600 to-indigo-600', tierBadge: '🥈 فضي' },
+    { min: 650, max: 1300, num: 3, nameAr: 'المستوى 3: مواظب متفوق 📚', nameEn: 'Level 3: Consistent Achiever 📚', color: 'from-emerald-600 to-teal-600', tierBadge: '🥇 ذهبي' },
+    { min: 1300, max: 2200, num: 4, nameAr: 'المستوى 4: نجم الدفعة 🌟', nameEn: 'Level 4: Class Luminary 🌟', color: 'from-cyan-500 to-blue-600', tierBadge: '💎 بلاتينيوم' },
+    { min: 2200, max: 3500, num: 5, nameAr: 'المستوى 5: وحش التركيز 🔥', nameEn: 'Level 5: Focus Titan 🔥', color: 'from-amber-500 to-orange-600', tierBadge: '💠 ياقوتي' },
+    { min: 3500, max: 5200, num: 6, nameAr: 'المستوى 6: عقلية علمية فذة 🧠', nameEn: 'Level 6: Master Strategist 🧠', color: 'from-purple-600 to-pink-600', tierBadge: '🔮 ماستر' },
+    { min: 5200, max: 7500, num: 7, nameAr: 'المستوى 7: دحّاح أسطوري 👑', nameEn: 'Level 7: Academic Legend 👑', color: 'from-rose-600 via-purple-600 to-indigo-600', tierBadge: '👑 جراند ماستر' },
+    { min: 7500, max: 10500, num: 8, nameAr: 'المستوى 8: القمة والامتياز 💎', nameEn: 'Level 8: Apex Scholar 💎', color: 'from-amber-400 via-rose-500 to-purple-700', tierBadge: '💎 ماسي نقي' },
+    { min: 10500, max: 15000, num: 9, nameAr: 'المستوى 9: عبقري الكلية 🚀', nameEn: 'Level 9: Grand Master 🚀', color: 'from-yellow-400 via-amber-500 to-red-600', tierBadge: '🚀 ملك الأوائل' },
+    { min: 15000, max: 99999, num: 10, nameAr: 'المستوى 10: أسطورة يسطا ذاكر الخالدة 🏆', nameEn: 'Level 10: Immortal Legend 🏆', color: 'from-amber-300 via-yellow-500 to-amber-600', tierBadge: '🏆 أسطورة خالدة' },
   ];
 
   const currentTier = TIERS.find(t => xp >= t.min && xp < t.max) || TIERS[TIERS.length - 1];

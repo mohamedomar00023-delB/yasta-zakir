@@ -15,10 +15,13 @@ import {
   Heart,
   Trophy,
   Camera,
-  Download
+  Download,
+  HelpCircle,
+  Sparkles
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { InstallAppModal } from './ui/InstallAppModal';
+import { haptic } from '../utils/haptics';
 
 export const Navbar: React.FC = () => {
   const {
@@ -34,6 +37,7 @@ export const Navbar: React.FC = () => {
     setIsAthkarModalOpen,
     setIsAchievementsModalOpen,
     setIsStudentStoryModalOpen,
+    setIsAppTourOpen,
     settings,
     setLanguage,
     t,
@@ -255,6 +259,19 @@ export const Navbar: React.FC = () => {
               title={isAr ? 'تخصيص الثيمات والأصوات' : 'Themes & Audio'}
             >
               <Palette className="w-4 h-4 text-amber-400" />
+            </button>
+
+            {/* App Guide & Tour Button */}
+            <button
+              onClick={() => {
+                haptic.light();
+                setIsAppTourOpen(true);
+              }}
+              className="p-1.5 sm:px-2.5 sm:py-2 rounded-xl border bg-amber-500/10 border-amber-500/30 text-amber-400 hover:text-white hover:bg-amber-600/30 transition-all text-xs font-black flex items-center gap-1 shadow-sm hover:scale-105 active:scale-95"
+              title={isAr ? 'دليل وشرح مميزات التطبيق 💡' : 'App Guide & Tour'}
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              <span className="hidden sm:inline">{isAr ? 'دليل التطبيق 💡' : 'Guide 💡'}</span>
             </button>
 
             {/* Backup Button */}

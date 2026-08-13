@@ -1,18 +1,20 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Check, Upload, User, Phone, BookPlus } from 'lucide-react';
+import { Sparkles, Check, Upload, User, Phone, BookPlus, Compass } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { PRESET_AVATARS } from '../../utils/presets';
 import { AvatarType } from '../../types';
+import { haptic } from '../../utils/haptics';
 
 export const OnboardingModal: React.FC = () => {
-  const { isOnboardingOpen, setIsOnboardingOpen, updateProfile, setLessons } = useApp();
+  const { isOnboardingOpen, setIsOnboardingOpen, updateProfile, setLessons, setIsAppTourOpen } = useApp();
 
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [startMode, setStartMode] = useState<'demo' | 'empty'>('demo');
   const [avatarType, setAvatarType] = useState<AvatarType>('emoji');
   const [avatarValue, setAvatarValue] = useState('🎓');
+  const [showTourAfter, setShowTourAfter] = useState(true);
 
   if (!isOnboardingOpen) return null;
 
@@ -52,6 +54,7 @@ export const OnboardingModal: React.FC = () => {
 
   const handleComplete = (e: React.FormEvent) => {
     e.preventDefault();
+    haptic.celebration();
     updateProfile({
       name: name.trim() || 'طالب متميز',
       phone: phone.trim(),
@@ -65,6 +68,12 @@ export const OnboardingModal: React.FC = () => {
     }
 
     setIsOnboardingOpen(false);
+
+    if (showTourAfter) {
+      setTimeout(() => {
+        setIsAppTourOpen(true);
+      }, 400);
+    }
   };
 
   return (
@@ -205,9 +214,21 @@ export const OnboardingModal: React.FC = () => {
               </div>
             </div>
 
+            {/* App Tour Checkbox */}
+            <label className="flex items-center gap-2.5 p-3 rounded-2xl border border-indigo-500/20 bg-indigo-500/10 cursor-pointer text-xs font-bold text-indigo-300 hover:bg-indigo-500/15 transition-all">
+              <input
+                type="checkbox"
+                checked={showTourAfter}
+                onChange={(e) => setShowTourAfter(e.target.checked)}
+                className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+              />
+              <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
+              <span>بدء جولة سريعة وشرح مميزات التطبيق بعد الدخول (موصى به ✨)</span>
+            </label>
+
             <button
               type="submit"
-              className="w-full py-3.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold text-base shadow-xl shadow-indigo-600/30 hover:opacity-95 transition-opacity flex items-center justify-center gap-2 mt-4"
+              className="w-full py-3.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold text-base shadow-xl shadow-indigo-600/30 hover:opacity-95 transition-opacity flex items-center justify-center gap-2 mt-2"
             >
               <span>دخول يسطا ذاكر 🚀</span>
               <Check className="w-5 h-5" />

@@ -22,6 +22,7 @@ import {
 import { useApp } from '../../context/AppContext';
 import { ATHKAR_DATA } from '../../utils/presets';
 import { AthkarItem } from '../../types';
+import { haptic } from '../../utils/haptics';
 
 // Play a soft synthesized mechanical Tasbeeh bead click
 function playTasbeehClick() {
@@ -86,14 +87,12 @@ export const AthkarModal: React.FC = () => {
 
       playTasbeehClick();
 
-      // Vibrate on mobile
-      if ('vibrate' in navigator) {
-        navigator.vibrate(20);
-      }
-
       if (nextVal === maxCount) {
-        addXP(10, isAr ? 'إتمام الذكر المبارك' : 'Completed Thikr');
-        showToast(isAr ? 'تقبل الله طاعتك! +10 XP ✨' : 'Thikr completed! +10 XP ✨', 'success');
+        haptic.success();
+        addXP(5, isAr ? 'إتمام الذكر المبارك' : 'Completed Thikr');
+        showToast(isAr ? 'تقبل الله طاعتك! +5 XP ✨' : 'Thikr completed! +5 XP ✨', 'success');
+      } else {
+        haptic.tasbeehTick();
       }
     }
   };
@@ -106,15 +105,17 @@ export const AthkarModal: React.FC = () => {
 
     playTasbeehClick();
 
-    // Vibrate
-    if ('vibrate' in navigator) {
-      navigator.vibrate(25);
+    if (nextVal === tasbeehTarget || nextVal % 33 === 0 || nextVal % 100 === 0) {
+      haptic.tasbeehMilestone();
+    } else {
+      haptic.tasbeehTick();
     }
 
     if (nextVal === tasbeehTarget) {
       triggerCelebration();
-      addXP(25, isAr ? 'إتمام دورة التسبيح' : 'Completed Tasbeeh cycle');
-      showToast(isAr ? `أتممت ${tasbeehTarget} تسبيحة! تقبل الله طاعتك 📿 +25 XP` : `Completed ${tasbeehTarget} Tasbeeh! 📿 +25 XP`, 'success');
+      const xpEarned = tasbeehTarget >= 100 ? 15 : 5;
+      addXP(xpEarned, isAr ? 'إتمام دورة التسبيح' : 'Completed Tasbeeh cycle');
+      showToast(isAr ? `أتممت ${tasbeehTarget} تسبيحة! تقبل الله طاعتك 📿 +${xpEarned} XP` : `Completed ${tasbeehTarget} Tasbeeh! 📿 +${xpEarned} XP`, 'success');
     }
   };
 
