@@ -79,21 +79,21 @@ export const Navbar: React.FC = () => {
                 haptic.light();
                 setIsEditProfileOpen(true);
               }}
-              className="relative group flex items-center gap-2 p-1 rounded-2xl hover:bg-slate-800/40 transition-all text-start shrink-0 active:scale-95"
+              className="relative group flex items-center gap-2.5 p-1 rounded-2xl hover:bg-slate-800/40 transition-all text-start shrink-0 active:scale-95"
               title={isAr ? 'تعديل بطاقة الطالب' : 'Edit Profile'}
             >
-              <div className="w-8.5 h-8.5 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-600 p-0.5 shadow-md shadow-indigo-500/20 group-hover:scale-105 transition-transform shrink-0">
+              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-600 p-0.5 shadow-lg shadow-indigo-500/25 group-hover:scale-105 transition-transform shrink-0">
                 <div className="w-full h-full rounded-[14px] flex items-center justify-center overflow-hidden"
                   style={{ background: 'var(--card-bg)' }}>
                   {profile.avatarType === 'upload' && profile.avatarValue ? (
                     <img src={profile.avatarValue} alt={profile.name} className="w-full h-full object-cover" />
                   ) : (
-                    <span className="text-base sm:text-xl">{profile.avatarValue || '🎓'}</span>
+                    <span className="text-xl sm:text-2xl">{profile.avatarValue || '🎓'}</span>
                   )}
                 </div>
               </div>
 
-              <div className="flex flex-col justify-center min-w-0 max-w-[105px] min-[380px]:max-w-[140px] sm:max-w-[220px]">
+              <div className="flex flex-col justify-center min-w-0 max-w-[110px] min-[380px]:max-w-[150px] sm:max-w-[220px]">
                 <div className="flex items-center gap-1">
                   <span className="font-black text-xs sm:text-sm leading-tight truncate" style={{ color: 'var(--text-color)' }}>
                     {profile.name || (isAr ? 'طالب متميز' : 'Student')}

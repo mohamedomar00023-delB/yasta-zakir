@@ -1,4 +1,4 @@
-const CACHE_NAME = 'yasta-zakir-v3';
+const CACHE_NAME = 'yasta-zakir-v5';
 
 const STATIC_ASSETS = [
   '/',
@@ -6,17 +6,17 @@ const STATIC_ASSETS = [
   '/manifest.json',
 ];
 
-// Install Event - Pre-cache core files
+// Install Event - Pre-cache core files & Skip Waiting immediately
 self.addEventListener('install', event => {
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
       return cache.addAll(STATIC_ASSETS);
     })
   );
-  self.skipWaiting();
 });
 
-// Activate Event - Clean up old caches
+// Activate Event - Instantly claim clients & Purge all old caches
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(cacheNames => {
@@ -27,46 +27,43 @@ self.addEventListener('activate', event => {
           }
         })
       );
-    })
+    }).then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
-// Fetch Event - Cache first, network fallback with dynamic caching
+// Fetch Event - Network First for HTML and navigation, Cache Fallback for offline
 self.addEventListener('fetch', event => {
-  // Skip non-GET requests or chrome-extension schemes
   if (event.request.method !== 'GET' || !event.request.url.startsWith('http')) return;
 
-  event.respondWith(
-    caches.match(event.request).then(cachedResponse => {
-      if (cachedResponse) {
-        // Fetch in background to update cache (Stale-While-Revalidate)
-        fetch(event.request)
-          .then(networkResponse => {
-            if (networkResponse && networkResponse.status === 200) {
-              caches.open(CACHE_NAME).then(cache => cache.put(event.request, networkResponse));
-            }
-          })
-          .catch(() => { /* offline fallback */ });
-        return cachedResponse;
-      }
-
-      return fetch(event.request)
+  // For HTML documents & navigations, always try Network First to get latest updates instantly
+  if (event.request.mode === 'navigate' || event.request.destination === 'document') {
+    event.respondWith(
+      fetch(event.request)
         .then(networkResponse => {
-          if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
-            return networkResponse;
+          if (networkResponse && networkResponse.status === 200) {
+            const copy = networkResponse.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
           }
-          const responseToCache = networkResponse.clone();
-          caches.open(CACHE_NAME).then(cache => {
-            cache.put(event.request, responseToCache);
-          });
           return networkResponse;
         })
-        .catch(() => {
-          if (event.request.mode === 'navigate') {
-            return caches.match('/index.html');
+        .catch(() => caches.match('/index.html') || caches.match(event.request))
+    );
+    return;
+  }
+
+  // Stale-While-Revalidate for other static assets
+  event.respondWith(
+    caches.match(event.request).then(cachedResponse => {
+      const fetchPromise = fetch(event.request)
+        .then(networkResponse => {
+          if (networkResponse && networkResponse.status === 200) {
+            caches.open(CACHE_NAME).then(cache => cache.put(event.request, networkResponse.clone()));
           }
-        });
+          return networkResponse;
+        })
+        .catch(() => cachedResponse);
+
+      return cachedResponse || fetchPromise;
     })
   );
 });
