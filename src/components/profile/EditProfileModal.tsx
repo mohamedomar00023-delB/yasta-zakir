@@ -195,13 +195,6 @@ export const EditProfileModal: React.FC = () => {
                     {isAr ? currentStageObj.titleAr : currentStageObj.titleEn} {schoolOrUniversity ? `• ${schoolOrUniversity}` : ''}
                   </p>
 
-                  {bio && (
-                    <p className="text-xs text-slate-300 italic bg-slate-900/50 p-2 rounded-xl border border-slate-700/40 flex items-center gap-1.5 justify-center sm:justify-start">
-                      <Quote className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
-                      <span className="truncate">"{bio}"</span>
-                    </p>
-                  )}
-
                   <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 text-[11px] font-bold text-slate-300 mt-2">
                     <span className="flex items-center gap-1 text-purple-400">
                       <Zap className="w-3.5 h-3.5 fill-purple-400" />
