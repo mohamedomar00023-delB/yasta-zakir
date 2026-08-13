@@ -114,14 +114,14 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 const STORAGE_KEYS = {
-  PROFILE: 'taleb_profile_v2',
-  LESSONS: 'taleb_lessons_v2',
-  TASKS: 'taleb_tasks_v2',
-  NOTES: 'taleb_notes_v2',
-  STUDY_PLANS: 'taleb_study_plans_v2',
-  COMPLETIONS: 'taleb_completions_v2',
-  PRAYERS: 'taleb_prayers_v2',
-  SETTINGS: 'taleb_settings_v2',
+  PROFILE: 'taleb_profile_v4',
+  LESSONS: 'taleb_lessons_v4',
+  TASKS: 'taleb_tasks_v4',
+  NOTES: 'taleb_notes_v4',
+  STUDY_PLANS: 'taleb_study_plans_v4',
+  COMPLETIONS: 'taleb_completions_v4',
+  PRAYERS: 'taleb_prayers_v4',
+  SETTINGS: 'taleb_settings_v4',
 };
 
 const DEFAULT_SETTINGS: AppSettings = {

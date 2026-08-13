@@ -67,22 +67,22 @@ export const Navbar: React.FC = () => {
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full glass-panel border-b transition-colors"
+    <header className="sticky top-0 z-40 w-full glass-panel border-b transition-colors shadow-sm"
       style={{ borderColor: 'var(--panel-border)' }}>
-      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-2.5 sm:py-3">
+      <div className="max-w-7xl mx-auto px-2.5 sm:px-4 lg:px-8 py-2 sm:py-2.5">
         <div className="flex items-center justify-between gap-1.5 sm:gap-4">
           
           {/* User Profile Info */}
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          <div className="flex items-center shrink-0">
             <button
               onClick={() => {
                 haptic.light();
                 setIsEditProfileOpen(true);
               }}
-              className="relative group flex items-center gap-2 sm:gap-3 p-1 sm:p-1.5 rounded-2xl hover:bg-slate-800/40 transition-all text-start shrink-0"
+              className="relative group flex items-center gap-2 p-1 rounded-2xl hover:bg-slate-800/40 transition-all text-start shrink-0 active:scale-95"
               title={isAr ? 'تعديل بطاقة الطالب' : 'Edit Profile'}
             >
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 to-purple-600 p-0.5 shadow-md shadow-indigo-500/20 group-hover:scale-105 transition-transform shrink-0">
+              <div className="w-8.5 h-8.5 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-600 p-0.5 shadow-md shadow-indigo-500/20 group-hover:scale-105 transition-transform shrink-0">
                 <div className="w-full h-full rounded-[14px] flex items-center justify-center overflow-hidden"
                   style={{ background: 'var(--card-bg)' }}>
                   {profile.avatarType === 'upload' && profile.avatarValue ? (
@@ -93,14 +93,14 @@ export const Navbar: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex flex-col justify-center max-w-[110px] min-[420px]:max-w-[150px] sm:max-w-[200px]">
+              <div className="flex flex-col justify-center min-w-0 max-w-[105px] min-[380px]:max-w-[140px] sm:max-w-[220px]">
                 <div className="flex items-center gap-1">
-                  <span className="font-black text-xs sm:text-sm leading-snug truncate" style={{ color: 'var(--text-color)' }}>
+                  <span className="font-black text-xs sm:text-sm leading-tight truncate" style={{ color: 'var(--text-color)' }}>
                     {profile.name || (isAr ? 'طالب متميز' : 'Student')}
                   </span>
                   <Edit className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 hidden sm:inline" />
                 </div>
-                <span className="text-[10px] sm:text-xs text-indigo-400 font-bold leading-tight truncate">
+                <span className="text-[10px] sm:text-xs text-indigo-400 font-bold leading-tight truncate mt-0.5">
                   {profile.gradeLevel ? `${profile.gradeLevel}` : (profile.schoolOrUniversity || (isAr ? 'طالب متميز 🎓' : 'Student 🎓'))}
                 </span>
               </div>
@@ -112,7 +112,10 @@ export const Navbar: React.FC = () => {
             style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)' }}>
             
             <button
-              onClick={() => setActiveTab('today')}
+              onClick={() => {
+                haptic.light();
+                setActiveTab('today');
+              }}
               className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
                 activeTab === 'today'
                   ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/25'
@@ -125,7 +128,10 @@ export const Navbar: React.FC = () => {
             </button>
 
             <button
-              onClick={() => setActiveTab('weekly')}
+              onClick={() => {
+                haptic.light();
+                setActiveTab('weekly');
+              }}
               className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
                 activeTab === 'weekly'
                   ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/25'
@@ -138,7 +144,10 @@ export const Navbar: React.FC = () => {
             </button>
 
             <button
-              onClick={() => setActiveTab('calendar')}
+              onClick={() => {
+                haptic.light();
+                setActiveTab('calendar');
+              }}
               className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
                 activeTab === 'calendar'
                   ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/25'
@@ -151,7 +160,10 @@ export const Navbar: React.FC = () => {
             </button>
 
             <button
-              onClick={() => setActiveTab('tasks')}
+              onClick={() => {
+                haptic.light();
+                setActiveTab('tasks');
+              }}
               className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
                 activeTab === 'tasks'
                   ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/25'
@@ -164,7 +176,10 @@ export const Navbar: React.FC = () => {
             </button>
 
             <button
-              onClick={() => setActiveTab('notes')}
+              onClick={() => {
+                haptic.light();
+                setActiveTab('notes');
+              }}
               className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
                 activeTab === 'notes'
                   ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/25'
@@ -178,90 +193,32 @@ export const Navbar: React.FC = () => {
           </nav>
 
           {/* Feature Action Buttons */}
-          <div className="flex items-center gap-1 sm:gap-1.5">
+          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
             
             {/* Athkar & Tasbeeh Button */}
             <button
-              onClick={() => setIsAthkarModalOpen(true)}
-              className="p-1.5 sm:px-2.5 sm:py-2 rounded-xl border bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:text-white hover:bg-emerald-600/30 transition-all text-xs font-bold flex items-center gap-1"
+              onClick={() => {
+                haptic.light();
+                setIsAthkarModalOpen(true);
+              }}
+              className="p-1.5 sm:px-2.5 sm:py-2 rounded-xl border bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:text-white hover:bg-emerald-600/30 transition-all text-xs font-black flex items-center gap-1 active:scale-95"
               title={isAr ? 'رفيق الأذكار والورد القرآني والسبحة 📿' : 'Athkar & Tasbeeh'}
             >
               <Heart className="w-4 h-4 text-emerald-400 fill-emerald-400/20" />
               <span className="hidden xl:inline">{isAr ? 'الأذكار 📿' : 'Athkar'}</span>
             </button>
 
-            {/* Achievements & Badges */}
-            <button
-              onClick={() => setIsAchievementsModalOpen(true)}
-              className="p-1.5 sm:px-2.5 sm:py-2 rounded-xl border bg-amber-500/10 border-amber-500/30 text-amber-400 hover:text-white hover:bg-amber-600/30 transition-all text-xs font-bold flex items-center gap-1"
-              title={isAr ? 'لوحة الأوسمة والإنجازات 🏆' : 'Badges & Achievements'}
-            >
-              <Trophy className="w-4 h-4 text-amber-400 fill-amber-400/20" />
-              <span className="hidden xl:inline">{isAr ? 'الأوسمة 🏆' : 'Badges'}</span>
-            </button>
-
             {/* AI Study Planner */}
             <button
-              onClick={() => setIsAIPlannerModalOpen(true)}
-              className="px-2 py-1.5 sm:px-3 sm:py-2 rounded-xl border bg-gradient-to-r from-purple-600/30 via-indigo-600/30 to-pink-600/30 border-purple-500/40 text-purple-300 hover:text-white transition-all text-xs font-bold flex items-center gap-1 shadow-sm hover:scale-105"
+              onClick={() => {
+                haptic.light();
+                setIsAIPlannerModalOpen(true);
+              }}
+              className="p-1.5 sm:px-3 sm:py-2 rounded-xl border bg-gradient-to-r from-purple-600/30 via-indigo-600/30 to-pink-600/30 border-purple-500/40 text-purple-300 hover:text-white transition-all text-xs font-black flex items-center gap-1 shadow-sm hover:scale-105 active:scale-95"
               title={isAr ? 'مساعد المذاكرة والامتحانات الذكي 🤖' : 'AI Study Planner'}
             >
               <Bot className="w-4 h-4 text-purple-400" />
               <span className="hidden md:inline">{t('navAIPlanner')}</span>
-            </button>
-
-            {/* Student Story Exporter */}
-            <button
-              onClick={() => setIsStudentStoryModalOpen(true)}
-              className="p-1.5 sm:p-2 rounded-xl border text-pink-400 hover:text-white hover:bg-pink-600/20 transition-all"
-              style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)' }}
-              title={isAr ? 'بطاقة الستوري والإنجاز للمشاركة 📸' : 'Share Story Card'}
-            >
-              <Camera className="w-4 h-4 text-pink-400" />
-            </button>
-
-            {/* Weekly Analytics Modal */}
-            <button
-              onClick={() => setIsStatsModalOpen(true)}
-              className="p-1.5 sm:px-2.5 sm:py-2 rounded-xl border text-indigo-400 hover:text-indigo-300 transition-colors text-xs font-bold flex items-center gap-1"
-              style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)' }}
-              title={isAr ? 'إحصائيات وتقارير الأداء الأسبوعي' : 'Weekly Analytics'}
-            >
-              <BarChart3 className="w-4 h-4 text-indigo-400" />
-              <span className="hidden md:inline">{t('navStats')}</span>
-            </button>
-
-            {/* Install App PWA Button */}
-            {!isAppInstalled && (
-              <button
-                onClick={() => setIsInstallModalOpen(true)}
-                className="px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl border bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border-emerald-500/40 text-emerald-300 hover:text-white hover:bg-emerald-600/30 transition-all text-xs font-black flex items-center gap-1.5 shadow-sm active:scale-95 animate-pulse"
-                title={isAr ? 'تثبيت التطبيق على جهازك 📲' : 'Install PWA App 📲'}
-              >
-                <Download className="w-4 h-4 text-emerald-400" />
-                <span className="hidden sm:inline">{isAr ? 'تثبيت 📲' : 'Install 📲'}</span>
-              </button>
-            )}
-
-            {/* Language Switcher Badge Button */}
-            <button
-              onClick={toggleLanguage}
-              className="px-2 py-1.5 rounded-xl border transition-all font-bold text-xs flex items-center gap-1 hover:bg-slate-800/40"
-              style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', color: 'var(--text-color)' }}
-              title={isAr ? 'Switch to English' : 'التحويل للغة العربية'}
-            >
-              <Languages className="w-3.5 h-3.5 text-amber-400" />
-              <span className="text-[10px] sm:text-[11px] font-black uppercase text-amber-400">{isAr ? 'EN' : 'عربي'}</span>
-            </button>
-
-            {/* Theme Selector Palette */}
-            <button
-              onClick={() => setIsThemeModalOpen(true)}
-              className="p-1.5 sm:p-2 rounded-xl border text-indigo-400 hover:text-indigo-300 transition-colors"
-              style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)' }}
-              title={isAr ? 'تخصيص الثيمات والأصوات' : 'Themes & Audio'}
-            >
-              <Palette className="w-4 h-4 text-amber-400" />
             </button>
 
             {/* App Guide & Tour Button */}
@@ -273,14 +230,44 @@ export const Navbar: React.FC = () => {
               className="p-1.5 sm:px-2.5 sm:py-2 rounded-xl border bg-amber-500/10 border-amber-500/30 text-amber-400 hover:text-white hover:bg-amber-600/30 transition-all text-xs font-black flex items-center gap-1 shadow-sm hover:scale-105 active:scale-95"
               title={isAr ? 'دليل وشرح مميزات التطبيق 💡' : 'App Guide & Tour'}
             >
-              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              <Sparkles className="w-4 h-4 text-amber-400" />
               <span className="hidden sm:inline">{isAr ? 'دليل التطبيق 💡' : 'Guide 💡'}</span>
             </button>
 
-            {/* Backup Button */}
+            {/* Language Switcher Badge Button */}
             <button
-              onClick={() => setIsBackupModalOpen(true)}
-              className="p-1.5 sm:p-2 rounded-xl border transition-colors"
+              onClick={() => {
+                haptic.light();
+                toggleLanguage();
+              }}
+              className="px-2 py-1.5 rounded-xl border transition-all font-black text-xs flex items-center gap-1 hover:bg-slate-800/40 active:scale-95"
+              style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', color: 'var(--text-color)' }}
+              title={isAr ? 'Switch to English' : 'التحويل للغة العربية'}
+            >
+              <Languages className="w-3.5 h-3.5 text-amber-400" />
+              <span className="text-[10px] sm:text-[11px] font-black uppercase text-amber-400">{isAr ? 'EN' : 'عربي'}</span>
+            </button>
+
+            {/* Theme Selector Palette */}
+            <button
+              onClick={() => {
+                haptic.light();
+                setIsThemeModalOpen(true);
+              }}
+              className="p-1.5 sm:p-2 rounded-xl border text-indigo-400 hover:text-indigo-300 transition-colors active:scale-95"
+              style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)' }}
+              title={isAr ? 'تخصيص الثيمات والأصوات' : 'Themes & Audio'}
+            >
+              <Palette className="w-4 h-4 text-amber-400" />
+            </button>
+
+            {/* Backup Button (Desktop & Tablet) */}
+            <button
+              onClick={() => {
+                haptic.light();
+                setIsBackupModalOpen(true);
+              }}
+              className="p-1.5 sm:p-2 rounded-xl border transition-colors hidden sm:inline-flex active:scale-95"
               style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)' }}
               title={isAr ? 'نسخ احتياطي واسترجاع البيانات' : 'Backup & Restore'}
             >
