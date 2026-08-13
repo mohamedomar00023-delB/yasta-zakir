@@ -73,33 +73,36 @@ export const Navbar: React.FC = () => {
         <div className="flex items-center justify-between gap-1.5 sm:gap-4">
           
           {/* User Profile Info */}
-          <div className="flex items-center gap-1.5 sm:gap-3 min-w-0">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <button
-              onClick={() => setIsEditProfileOpen(true)}
-              className="relative group flex items-center gap-2 sm:gap-3 p-1 rounded-2xl hover:bg-slate-800/30 transition-all text-start min-w-0"
+              onClick={() => {
+                haptic.light();
+                setIsEditProfileOpen(true);
+              }}
+              className="relative group flex items-center gap-2 sm:gap-3 p-1 sm:p-1.5 rounded-2xl hover:bg-slate-800/40 transition-all text-start shrink-0"
               title={isAr ? 'تعديل بطاقة الطالب' : 'Edit Profile'}
             >
-              <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-tr from-indigo-600 to-purple-600 p-0.5 shadow-lg shadow-indigo-500/20 group-hover:scale-105 transition-transform shrink-0">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 to-purple-600 p-0.5 shadow-md shadow-indigo-500/20 group-hover:scale-105 transition-transform shrink-0">
                 <div className="w-full h-full rounded-[14px] flex items-center justify-center overflow-hidden"
                   style={{ background: 'var(--card-bg)' }}>
                   {profile.avatarType === 'upload' && profile.avatarValue ? (
                     <img src={profile.avatarValue} alt={profile.name} className="w-full h-full object-cover" />
                   ) : (
-                    <span className="text-lg sm:text-2xl">{profile.avatarValue || '🎓'}</span>
+                    <span className="text-base sm:text-xl">{profile.avatarValue || '🎓'}</span>
                   )}
                 </div>
               </div>
 
-              <div className="min-w-0">
+              <div className="flex flex-col justify-center max-w-[110px] min-[420px]:max-w-[150px] sm:max-w-[200px]">
                 <div className="flex items-center gap-1">
-                  <span className="font-bold text-xs sm:text-base leading-tight truncate max-w-[100px] sm:max-w-none" style={{ color: 'var(--text-color)' }}>
+                  <span className="font-black text-xs sm:text-sm leading-snug truncate" style={{ color: 'var(--text-color)' }}>
                     {profile.name || (isAr ? 'طالب متميز' : 'Student')}
                   </span>
                   <Edit className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 hidden sm:inline" />
                 </div>
-                <p className="text-[10px] sm:text-xs text-indigo-400 font-medium truncate max-w-[110px] sm:max-w-none">
+                <span className="text-[10px] sm:text-xs text-indigo-400 font-bold leading-tight truncate">
                   {profile.gradeLevel ? `${profile.gradeLevel}` : (profile.schoolOrUniversity || (isAr ? 'طالب متميز 🎓' : 'Student 🎓'))}
-                </p>
+                </span>
               </div>
             </button>
           </div>
