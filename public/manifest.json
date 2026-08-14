@@ -1,37 +1,58 @@
 {
+  "id": "yasta-zakir-pwa-v2",
   "short_name": "يسطا ذاكر 🎓",
-  "name": "يسطا ذاكر 🎓 | Yasta Zakir - رفيق الطالب الذكي ومواقيت الصلاة",
-  "description": "منظم يوميات الطالب الذكي — جدول المحاضرات، مواقيت الصلاة والقبلة، الذكاء الاصطناعي، الأذكار، والأوسمة بدون إنترنت.",
+  "name": "يسطا ذاكر | منظم الطالب الذكي ومواقيت الصلاة",
+  "description": "تطبيق متكامل لتنظيم الجدول الدراسي والمحاضرات، مواقيت الصلاة والقبلة بدقة، مساعد الذكاء الاصطناعي، والأذكار بدون إنترنت.",
   "icons": [
     {
-      "src": "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎓</text></svg>",
+      "src": "/app-icon.svg",
       "sizes": "192x192 512x512",
       "type": "image/svg+xml",
       "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "48x48 96x96",
+      "type": "image/svg+xml",
+      "purpose": "any"
     }
   ],
   "start_url": "/",
+  "scope": "/",
   "background_color": "#020617",
-  "theme_color": "#4f46e5",
+  "theme_color": "#020617",
   "display": "standalone",
+  "display_override": [
+    "standalone",
+    "window-controls-overlay",
+    "minimal-ui"
+  ],
   "orientation": "portrait-primary",
   "dir": "rtl",
   "lang": "ar",
-  "categories": ["education", "productivity", "lifestyle"],
+  "prefer_related_applications": false,
+  "categories": ["education", "productivity", "utilities"],
   "shortcuts": [
     {
-      "name": "مساعد المذاكرة الذكي",
+      "name": "الصلوات ومؤشر الإنجاز",
+      "short_name": "الصلوات",
+      "description": "مواقيت الصلوات الخمس والعداد التنازلي",
+      "url": "/?tab=today",
+      "icons": [{ "src": "/app-icon.svg", "sizes": "96x96" }]
+    },
+    {
+      "name": "مساعد الذكاء الاصطناعي",
       "short_name": "AI Planner",
       "description": "توليد جدول المذاكرة بالذكاء الاصطناعي",
-      "url": "/?tab=ai",
-      "icons": [{ "src": "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🤖</text></svg>", "sizes": "96x96" }]
+      "url": "/?modal=ai",
+      "icons": [{ "src": "/app-icon.svg", "sizes": "96x96" }]
     },
     {
       "name": "السبحة والأذكار",
       "short_name": "الأذكار",
-      "description": "أذكار المذاكرة والسبحة الإلكترونية",
-      "url": "/?tab=athkar",
-      "icons": [{ "src": "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📿</text></svg>", "sizes": "96x96" }]
+      "description": "أذكار الصباح والمساء والسبحة الإلكترونية",
+      "url": "/?modal=athkar",
+      "icons": [{ "src": "/app-icon.svg", "sizes": "96x96" }]
     }
   ]
 }

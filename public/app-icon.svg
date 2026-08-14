@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4f46e5" />
+      <stop offset="50%" stop-color="#7c3aed" />
+      <stop offset="100%" stop-color="#06b6d4" />
+    </linearGradient>
+    <linearGradient id="glowGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.45" />
+    </filter>
+  </defs>
+
+  <!-- Background Rounded Canvas -->
+  <rect width="512" height="512" rx="128" fill="url(#bgGrad)" />
+  
+  <!-- Subtle Top Shimmer Overlay -->
+  <rect width="512" height="256" rx="128" fill="url(#glowGrad)" />
+
+  <!-- Center Graduate Cap & Book Symbol with Shadow -->
+  <g filter="url(#shadow)" transform="translate(0, 10)">
+    <!-- Graduation Cap Top Rhombus -->
+    <path d="M256 120 L420 195 L256 270 L92 195 Z" fill="#ffffff" stroke="#f8fafc" stroke-width="4" stroke-linejoin="round" />
+    
+    <!-- Cap Skull Base -->
+    <path d="M165 233 L165 315 C165 355 347 355 347 315 L347 233 L256 275 Z" fill="#e0e7ff" opacity="0.95" />
+    
+    <!-- Tassel String and Pendant -->
+    <path d="M400 205 L400 310 C395 320 405 320 400 335" stroke="#fbbf24" stroke-width="8" stroke-linecap="round" fill="none" />
+    <circle cx="400" cy="340" r="10" fill="#f59e0b" />
+    <circle cx="256" cy="195" r="8" fill="#f59e0b" />
+
+    <!-- Open Holy Quran / Study Book at bottom -->
+    <g transform="translate(136, 330)">
+      <!-- Left Page -->
+      <path d="M120 45 C75 30 15 35 0 45 L0 95 C15 85 75 80 120 95 Z" fill="#ffffff" />
+      <!-- Right Page -->
+      <path d="M120 45 C165 30 225 35 240 45 L240 95 C225 85 165 80 120 95 Z" fill="#f1f5f9" />
+      <!-- Book spine divider -->
+      <line x1="120" y1="40" x2="120" y2="100" stroke="#6366f1" stroke-width="4" stroke-linecap="round" />
+    </g>
+  </g>
+
+  <!-- Golden Crescent Moon Star Accent -->
+  <g transform="translate(370, 75) scale(0.65)">
+    <path d="M30 0 A30 30 0 1 0 70 50 A24 24 0 1 1 30 0 Z" fill="#fbbf24" />
+    <polygon points="55,10 58,20 68,20 60,26 63,36 55,30 47,36 50,26 42,20 52,20" fill="#fef08a" />
+  </g>
+</svg>

@@ -2,26 +2,34 @@
 <html lang="ar" dir="rtl" class="dark">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎓</text></svg>" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>يسطا ذاكر 🎓 | Yasta Zakir - منظم يوميات الطالب المصري</title>
-    <meta name="description" content="يسطا ذاكر - أكتر تطبيق منظم ليك كطالب! متابعة المحاضرات والدروس، مواقيت الصلاة والعداد التنازلي، تنبيه ذكي عند التعارض، وتتبع الواجبات والمهام." />
+    <link rel="icon" type="image/svg+xml" href="/app-icon.svg" />
+    <link rel="apple-touch-icon" href="/app-icon.svg" />
+    
+    <!-- Ultra-fluid mobile & notch dimensions -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    
+    <title>يسطا ذاكر 🎓 | Yasta Zakir - رفيق الطالب الذكي ومواقيت الصلاة</title>
+    <meta name="description" content="يسطا ذاكر - رفيقك لتنظيم يومك الدراسي والمحاضرات، مواقيت الصلاة والقبلة، الذكاء الاصطناعي، والأذكار بدون إنترنت." />
     <meta name="keywords" content="يسطا ذاكر, طالب, مواقيت الصلاة, جدول دروس, مذاكرة, واجبات, منظم طلاب مصري" />
     
-    <!-- PWA Mobile App Support -->
+    <!-- PWA Standalone App Metadata -->
     <link rel="manifest" href="/manifest.json" />
-    <meta name="theme-color" content="#4f46e5" />
+    <meta name="theme-color" content="#020617" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="application-name" content="يسطا ذاكر" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="يسطا ذاكر" />
+    <meta name="apple-touch-fullscreen" content="yes" />
+    <meta name="format-detection" content="telephone=no" />
 
     <!-- Google Fonts: Tajawal & Cairo -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
   </head>
-  <body class="bg-slate-950 text-slate-100 font-tajawal antialiased selection:bg-indigo-500 selection:text-white min-h-screen pb-16 lg:pb-0">
-    <div id="root"></div>
+  <body class="bg-slate-950 text-slate-100 font-tajawal antialiased selection:bg-indigo-500 selection:text-white min-h-[100dvh] w-full overflow-x-hidden">
+    <div id="root" class="min-h-[100dvh] w-full flex flex-col"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

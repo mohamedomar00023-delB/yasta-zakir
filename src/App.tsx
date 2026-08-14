@@ -73,20 +73,20 @@ const DashboardContent: React.FC = () => {
   useNotifications({ prayers });
 
   return (
-    <div className="min-h-screen flex flex-col font-tajawal transition-colors duration-400">
+    <div className="min-h-[100dvh] w-full max-w-full overflow-x-hidden flex flex-col font-tajawal transition-colors duration-400">
       
       {/* Top Navbar */}
       <Navbar />
 
       {/* Main Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-5 sm:space-y-6 pb-24 lg:pb-8">
         
         {/* Dynamic Welcome Greeting & Hijri Date Banner */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-5 rounded-3xl glass-card border border-indigo-500/20 bg-gradient-to-r from-indigo-950/40 via-purple-950/30 to-slate-900/60">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 sm:p-5 rounded-3xl glass-card border border-indigo-500/20 bg-gradient-to-r from-indigo-950/40 via-purple-950/30 to-slate-900/60">
           <div>
-            <h1 className="text-xl sm:text-2xl font-black flex items-center gap-2" style={{ color: 'var(--text-color)' }}>
+            <h1 className="text-lg sm:text-2xl font-black flex items-center gap-2" style={{ color: 'var(--text-color)' }}>
               <span>{t('welcomeGreeting', { name: profile.name || (isAr ? 'باشا' : 'Champ') })}</span>
-              <Sparkles className="w-5 h-5 text-amber-400" />
+              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" />
             </h1>
             <p className="text-xs sm:text-sm mt-1" style={{ color: 'var(--subtext-color)' }}>
               {t('summaryStatus', { lessons: todayLessons.length, tasks: todayTasks.length })}
