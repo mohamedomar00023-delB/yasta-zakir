@@ -1,4 +1,4 @@
-import { ChimeToneId } from '../types';
+import { AdhanSoundId, NotificationSoundId, ChimeToneId } from '../types';
 
 let audioCtx: AudioContext | null = null;
 let masterGain: GainNode | null = null;
@@ -9,7 +9,7 @@ let activeAudioElement: HTMLAudioElement | null = null;
 // Ambient sound active nodes
 let ambientOscillators: { stop: () => void }[] = [];
 
-const getAudioContext = (): { ctx: AudioContext; master: GainNode } => {
+export const getAudioContext = (): { ctx: AudioContext; master: GainNode } => {
   if (!audioCtx) {
     const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
     audioCtx = new AudioContextClass();
@@ -24,104 +24,105 @@ const getAudioContext = (): { ctx: AudioContext; master: GainNode } => {
 };
 
 export const setMasterVolume = (vol: number) => {
-  const { master } = getAudioContext();
-  master.gain.setValueAtTime(Math.max(0, Math.min(1, vol)), 0);
+  const clamped = Math.max(0, Math.min(1, vol));
+  try {
+    const { master } = getAudioContext();
+    master.gain.setValueAtTime(clamped, 0);
+  } catch {
+    // ignore
+  }
   if (activeAudioElement) {
-    activeAudioElement.volume = Math.max(0, Math.min(1, vol));
+    activeAudioElement.volume = clamped;
   }
 };
 
 /**
- * Stops any playing Adhan audio or chime
+ * Stops any playing Adhan audio, notification, or chime
  */
 export const stopActiveAudio = () => {
   if (activeAudioElement) {
-    activeAudioElement.pause();
-    activeAudioElement.currentTime = 0;
+    try {
+      activeAudioElement.pause();
+      activeAudioElement.currentTime = 0;
+    } catch {
+      // ignore
+    }
     activeAudioElement = null;
   }
 };
 
+// ==========================================
+// 1. ADHAN AUDIO RECITATION ENGINE
+// ==========================================
+
+const ADHAN_STREAMS: Record<Exclude<AdhanSoundId, 'silent'>, { primary: string; fallback?: string }> = {
+  'makkah': {
+    primary: 'https://cdn.aladhan.com/audio/adhans/c1.mp3',
+    fallback: 'https://media.sd.ma/assabile/adhan_34353/makkah.mp3',
+  },
+  'madinah': {
+    primary: 'https://cdn.aladhan.com/audio/adhans/a3.mp3',
+    fallback: 'https://cdn.aladhan.com/audio/adhans/c2.mp3',
+  },
+  'alaqsa': {
+    primary: 'https://cdn.aladhan.com/audio/adhans/a1.mp3',
+  },
+  'egypt-refaat': {
+    primary: 'https://cdn.aladhan.com/audio/adhans/a4.mp3',
+    fallback: 'https://cdn.aladhan.com/audio/adhans/c1.mp3',
+  },
+  'abdulbasit': {
+    primary: 'https://cdn.aladhan.com/audio/adhans/a2.mp3',
+  },
+  'takbeer-short': {
+    primary: 'https://cdn.aladhan.com/audio/adhans/a3.mp3',
+  },
+  'nasr-tobbar': {
+    primary: 'https://cdn.aladhan.com/audio/adhans/a4.mp3',
+  },
+  'fajr-special': {
+    primary: 'https://cdn.aladhan.com/audio/adhans/fajr1.mp3',
+    fallback: 'https://cdn.aladhan.com/audio/adhans/c1.mp3',
+  },
+};
+
 /**
- * Plays a customizable prayer Adhan / Alert Chime tone
+ * Play Adhan recitation by sound ID
  */
-export const playAdhanChime = (tone: ChimeToneId = 'full-adhan', volume: number = 0.8) => {
+export const playAdhan = (soundId: AdhanSoundId = 'makkah', volume: number = 0.8) => {
   stopActiveAudio();
+  if (soundId === 'silent') return;
 
-  // 1. Real MP3 Adhan Audio
-  if (tone === 'full-adhan') {
-    try {
-      // High-quality Makkah / Madinah Adhan stream
-      const audio = new Audio('https://cdn.aladhan.com/audio/adhans/c1.mp3');
-      audio.volume = Math.max(0, Math.min(1, volume));
-      audio.play().catch(() => {
-        // Fallback to synthesized Adhan melody if offline / blocked
-        playSynthesizedTakbeer(volume);
-      });
-      activeAudioElement = audio;
-      return;
-    } catch {
-      playSynthesizedTakbeer(volume);
-      return;
-    }
-  }
+  const streamInfo = ADHAN_STREAMS[soundId] || ADHAN_STREAMS['makkah'];
 
-  // 2. Takbeerat (Short Adhan Intro)
-  if (tone === 'takbeer') {
-    try {
-      const audio = new Audio('https://cdn.aladhan.com/audio/adhans/a3.mp3');
-      audio.volume = Math.max(0, Math.min(1, volume));
-      audio.play().catch(() => {
-        playSynthesizedTakbeer(volume);
-      });
-      activeAudioElement = audio;
-      return;
-    } catch {
-      playSynthesizedTakbeer(volume);
-      return;
-    }
-  }
-
-  // 3. Web Audio API Synthesized Melodic Chimes
   try {
-    const { ctx, master } = getAudioContext();
-    const now = ctx.currentTime;
-
-    const toneFrequencies: Record<string, number[]> = {
-      'soft-bell': [349.23, 440.00, 523.25, 698.46], // F4, A4, C5, F5
-      'oud-chime': [293.66, 369.99, 440.00, 587.33], // D4, F#4, A4, D5
-      'crystal': [523.25, 659.25, 783.99, 1046.50],  // C5, E5, G5, C6
-      'oriental': [329.63, 415.30, 493.88, 659.25], // E4, G#4, B4, E5
-    };
-
-    const freqs = toneFrequencies[tone] || toneFrequencies['soft-bell'];
-
-    freqs.forEach((freq, index) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-
-      osc.type = tone === 'crystal' ? 'sine' : tone === 'oud-chime' ? 'triangle' : 'sine';
-      osc.frequency.setValueAtTime(freq, now + index * 0.22);
-
-      gain.gain.setValueAtTime(0, now + index * 0.22);
-      gain.gain.linearRampToValueAtTime(0.18 * volume, now + index * 0.22 + 0.1);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + index * 0.22 + 2.4);
-
-      osc.connect(gain);
-      gain.connect(master);
-
-      osc.start(now + index * 0.22);
-      osc.stop(now + index * 0.22 + 2.5);
-    });
-  } catch (err) {
-    console.warn('Audio chime playback error:', err);
+    const audio = new Audio(streamInfo.primary);
+    audio.volume = Math.max(0, Math.min(1, volume));
+    
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(() => {
+        // Try secondary fallback stream or synthesized Takbeer
+        if (streamInfo.fallback) {
+          const fallbackAudio = new Audio(streamInfo.fallback);
+          fallbackAudio.volume = Math.max(0, Math.min(1, volume));
+          fallbackAudio.play().catch(() => playSynthesizedTakbeer(volume));
+          activeAudioElement = fallbackAudio;
+        } else {
+          playSynthesizedTakbeer(volume);
+        }
+      });
+    }
+    activeAudioElement = audio;
+  } catch {
+    playSynthesizedTakbeer(volume);
   }
 };
 
 /**
- * Synthesized Maqam Rast / Bayati Adhan Takbeer fallback
+ * Synthesized Maqam Rast / Bayati Adhan Takbeer (100% Offline fallback)
  */
-function playSynthesizedTakbeer(volume: number = 0.8) {
+export function playSynthesizedTakbeer(volume: number = 0.8) {
   try {
     const { ctx, master } = getAudioContext();
     const now = ctx.currentTime;
@@ -149,6 +150,233 @@ function playSynthesizedTakbeer(volume: number = 0.8) {
     console.warn('Takbeer synthesizer error:', err);
   }
 }
+
+// ==========================================
+// 2. NOTIFICATION & CHIME AUDIO ENGINE
+// ==========================================
+
+/**
+ * Plays modern / oriental synthesized notification sound
+ */
+export const playNotificationSound = (soundId: NotificationSoundId = 'soft-bell', volume: number = 0.8) => {
+  stopActiveAudio();
+  if (soundId === 'silent') return;
+
+  try {
+    const { ctx, master } = getAudioContext();
+    const now = ctx.currentTime;
+    const vol = Math.max(0, Math.min(1, volume));
+
+    switch (soundId) {
+      case 'soft-bell': {
+        // F4, A4, C5, F5 with smooth decay
+        const freqs = [349.23, 440.00, 523.25, 698.46];
+        freqs.forEach((freq, i) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now + i * 0.14);
+          gain.gain.setValueAtTime(0, now + i * 0.14);
+          gain.gain.linearRampToValueAtTime(0.18 * vol, now + i * 0.14 + 0.04);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.14 + 1.6);
+          osc.connect(gain);
+          gain.connect(master);
+          osc.start(now + i * 0.14);
+          osc.stop(now + i * 0.14 + 1.7);
+        });
+        break;
+      }
+
+      case 'crystal-ping': {
+        // C5, E5, G5, C6 high sparkle
+        const freqs = [523.25, 659.25, 783.99, 1046.50];
+        freqs.forEach((freq, i) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now + i * 0.1);
+          gain.gain.setValueAtTime(0, now + i * 0.1);
+          gain.gain.linearRampToValueAtTime(0.15 * vol, now + i * 0.1 + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.1 + 1.8);
+          osc.connect(gain);
+          gain.connect(master);
+          osc.start(now + i * 0.1);
+          osc.stop(now + i * 0.1 + 1.9);
+        });
+        break;
+      }
+
+      case 'oud-melody': {
+        // Plucked acoustic oriental notes D4, F#4, A4, D5
+        const freqs = [293.66, 369.99, 440.00, 587.33];
+        freqs.forEach((freq, i) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, now + i * 0.18);
+          gain.gain.setValueAtTime(0, now + i * 0.18);
+          gain.gain.linearRampToValueAtTime(0.22 * vol, now + i * 0.18 + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.18 + 1.4);
+          osc.connect(gain);
+          gain.connect(master);
+          osc.start(now + i * 0.18);
+          osc.stop(now + i * 0.18 + 1.5);
+        });
+        break;
+      }
+
+      case 'gentle-piano': {
+        // G4, B4, D5, G5 harmonic piano chords
+        const freqs = [392.00, 493.88, 587.33, 783.99];
+        freqs.forEach((freq, i) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now + i * 0.12);
+          gain.gain.setValueAtTime(0, now + i * 0.12);
+          gain.gain.linearRampToValueAtTime(0.2 * vol, now + i * 0.12 + 0.03);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.12 + 1.9);
+          osc.connect(gain);
+          gain.connect(master);
+          osc.start(now + i * 0.12);
+          osc.stop(now + i * 0.12 + 2.0);
+        });
+        break;
+      }
+
+      case 'success-horizon': {
+        // Uplifting celebratory arpeggio: C5 -> E5 -> G5 -> B5 -> C6
+        const freqs = [523.25, 659.25, 783.99, 987.77, 1046.50];
+        freqs.forEach((freq, i) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now + i * 0.09);
+          gain.gain.setValueAtTime(0, now + i * 0.09);
+          gain.gain.linearRampToValueAtTime(0.18 * vol, now + i * 0.09 + 0.03);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.09 + 1.5);
+          osc.connect(gain);
+          gain.connect(master);
+          osc.start(now + i * 0.09);
+          osc.stop(now + i * 0.09 + 1.6);
+        });
+        break;
+      }
+
+      case 'modern-ping': {
+        // Dual tech ping (880Hz -> 1320Hz)
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, now);
+        osc.frequency.exponentialRampToValueAtTime(1320, now + 0.12);
+        gain.gain.setValueAtTime(0, now);
+        gain.gain.linearRampToValueAtTime(0.25 * vol, now + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+        osc.connect(gain);
+        gain.connect(master);
+        osc.start(now);
+        osc.stop(now + 0.5);
+        break;
+      }
+
+      case 'birds-nature': {
+        // Frequency-modulated sweet bird chirp
+        [0, 0.18, 0.36].forEach((timeOffset, idx) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          const baseFreq = idx === 1 ? 2600 : 2200;
+          osc.frequency.setValueAtTime(baseFreq, now + timeOffset);
+          osc.frequency.exponentialRampToValueAtTime(baseFreq + 600, now + timeOffset + 0.08);
+          osc.frequency.exponentialRampToValueAtTime(baseFreq - 200, now + timeOffset + 0.15);
+          gain.gain.setValueAtTime(0, now + timeOffset);
+          gain.gain.linearRampToValueAtTime(0.12 * vol, now + timeOffset + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + timeOffset + 0.16);
+          osc.connect(gain);
+          gain.connect(master);
+          osc.start(now + timeOffset);
+          osc.stop(now + timeOffset + 0.18);
+        });
+        break;
+      }
+
+      case 'water-drop': {
+        // Resonant pitch-swept water droplet sound
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(600, now);
+        osc.frequency.exponentialRampToValueAtTime(1400, now + 0.06);
+        osc.frequency.exponentialRampToValueAtTime(800, now + 0.2);
+        gain.gain.setValueAtTime(0, now);
+        gain.gain.linearRampToValueAtTime(0.3 * vol, now + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+        osc.connect(gain);
+        gain.connect(master);
+        osc.start(now);
+        osc.stop(now + 0.4);
+        break;
+      }
+
+      case 'marimba-pop': {
+        // Crisp wooden acoustic marimba strike
+        const freqs = [587.33, 880.00];
+        freqs.forEach((freq, i) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now + i * 0.08);
+          gain.gain.setValueAtTime(0, now + i * 0.08);
+          gain.gain.linearRampToValueAtTime(0.28 * vol, now + i * 0.08 + 0.01);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.3);
+          osc.connect(gain);
+          gain.connect(master);
+          osc.start(now + i * 0.08);
+          osc.stop(now + i * 0.08 + 0.35);
+        });
+        break;
+      }
+
+      case 'subtle-breeze': {
+        // Meditative Tibetan singing bowl resonance
+        const osc = ctx.createOscillator();
+        const oscHarmonic = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        oscHarmonic.type = 'sine';
+        osc.frequency.setValueAtTime(432, now);
+        oscHarmonic.frequency.setValueAtTime(864, now);
+        gain.gain.setValueAtTime(0, now);
+        gain.gain.linearRampToValueAtTime(0.18 * vol, now + 0.08);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 2.2);
+        osc.connect(gain);
+        oscHarmonic.connect(gain);
+        gain.connect(master);
+        osc.start(now);
+        oscHarmonic.start(now);
+        osc.stop(now + 2.3);
+        oscHarmonic.stop(now + 2.3);
+        break;
+      }
+    }
+  } catch (err) {
+    console.warn('Notification sound error:', err);
+  }
+};
+
+/**
+ * Backward-compatible helper for old calls
+ */
+export const playAdhanChime = (tone: ChimeToneId = 'full-adhan', volume: number = 0.8) => {
+  if (tone === 'full-adhan') {
+    playAdhan('makkah', volume);
+  } else if (tone === 'takbeer') {
+    playAdhan('takbeer-short', volume);
+  } else {
+    playNotificationSound(tone as NotificationSoundId, volume);
+  }
+};
 
 /**
  * Success ping for completing lessons/tasks

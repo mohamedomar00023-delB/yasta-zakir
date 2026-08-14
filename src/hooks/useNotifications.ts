@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useApp } from '../context/AppContext';
 import { PrayerItem } from '../types';
-import { playAdhanChime, playWarningAlert } from '../utils/sound';
+import { playAdhan, playNotificationSound } from '../utils/sound';
 import { timeToMinutes } from '../utils/formatters';
 
 interface UseNotificationsProps {
@@ -70,7 +70,7 @@ export function useNotifications({ prayers }: UseNotificationsProps) {
 
           // Play sound if enabled
           if (settings.soundEnabled) {
-            playAdhanChime();
+            playAdhan(settings.adhanSound || 'makkah', settings.volume ?? 0.8);
           }
 
           triggerNotification(
@@ -93,7 +93,7 @@ export function useNotifications({ prayers }: UseNotificationsProps) {
           notifiedLessonsRef.current.add(key);
 
           if (settings.soundEnabled) {
-            playWarningAlert();
+            playNotificationSound(settings.notificationSound || 'soft-bell', settings.volume ?? 0.8);
           }
 
           triggerNotification(
@@ -117,7 +117,7 @@ export function useNotifications({ prayers }: UseNotificationsProps) {
             notifiedTasksRef.current.add(key);
 
             if (settings.soundEnabled) {
-              playWarningAlert();
+              playNotificationSound(settings.notificationSound || 'soft-bell', settings.volume ?? 0.8);
             }
 
             triggerNotification(
@@ -128,7 +128,6 @@ export function useNotifications({ prayers }: UseNotificationsProps) {
           }
         }
       });
-
     }, 20000);
 
     return () => clearInterval(interval);
@@ -138,3 +137,4 @@ export function useNotifications({ prayers }: UseNotificationsProps) {
     requestPermission,
   };
 }
+

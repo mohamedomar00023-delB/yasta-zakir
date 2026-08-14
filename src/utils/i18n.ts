@@ -26,9 +26,16 @@ export const translations = {
     navNotes: 'النوتات',
     navStats: 'الإحصائيات',
     navAIPlanner: 'مساعد AI',
+    navAthkar: 'الأذكار 📿',
+    navAchievements: 'إنجازاتي 🏆',
+    navStoryShare: 'بطاقة إنجازي 📸',
+    navGuide: 'دليل التطبيق 💡',
     navSettings: 'الإعدادات',
     navTheme: 'المظهر والأصوات',
     navBackup: 'النسخ الاحتياطي',
+    navInstallApp: 'تثبيت التطبيق',
+    navInstalled: 'مثبّت 📱',
+    navMore: 'المزيد',
 
     // Welcome Greeting
     welcomeGreeting: 'أهلاً بيك يا {name} 👋 .. جاهز تظبط يومك؟',
@@ -152,9 +159,16 @@ export const translations = {
     navNotes: 'Notes',
     navStats: 'Analytics',
     navAIPlanner: 'AI Planner',
+    navAthkar: 'Athkar 📿',
+    navAchievements: 'Badges 🏆',
+    navStoryShare: 'Story Card 📸',
+    navGuide: 'App Guide 💡',
     navSettings: 'Settings',
     navTheme: 'Themes & Audio',
     navBackup: 'Backup',
+    navInstallApp: 'Install App',
+    navInstalled: 'Installed 📱',
+    navMore: 'More',
 
     // Welcome Greeting
     welcomeGreeting: 'Welcome back, {name} 👋 .. Ready to conquer the day?',

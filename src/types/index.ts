@@ -106,6 +106,30 @@ export interface PrayerConflictAlert {
 
 export type ThemeId = 'midnight' | 'emerald' | 'rose' | 'violet' | 'ocean' | 'amber' | 'light';
 export type ChimeToneId = 'full-adhan' | 'takbeer' | 'soft-bell' | 'oud-chime' | 'crystal' | 'oriental';
+export type AdhanSoundId = 
+  | 'makkah' 
+  | 'madinah' 
+  | 'alaqsa' 
+  | 'egypt-refaat' 
+  | 'abdulbasit' 
+  | 'takbeer-short' 
+  | 'nasr-tobbar' 
+  | 'fajr-special' 
+  | 'silent';
+
+export type NotificationSoundId = 
+  | 'soft-bell' 
+  | 'crystal-ping' 
+  | 'oud-melody' 
+  | 'gentle-piano' 
+  | 'success-horizon' 
+  | 'modern-ping' 
+  | 'birds-nature' 
+  | 'water-drop' 
+  | 'marimba-pop' 
+  | 'subtle-breeze' 
+  | 'silent';
+
 export type AppLanguage = 'ar' | 'en';
 
 export interface BadgeItem {
@@ -140,6 +164,8 @@ export interface AppSettings {
   themeId: ThemeId;
   language: AppLanguage;
   chimeTone: ChimeToneId;
+  adhanSound?: AdhanSoundId;
+  notificationSound?: NotificationSoundId;
   volume: number; // 0 to 1
   soundEnabled: boolean;
   notificationsEnabled: boolean;
