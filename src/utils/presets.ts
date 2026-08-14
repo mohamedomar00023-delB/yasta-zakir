@@ -181,15 +181,18 @@ export const CALCULATION_METHODS = [
 ];
 
 export const DEFAULT_PROFILE: UserProfile = {
-  name: 'محمد',
+  name: 'محمد إسماعيل',
   title: 'طالب متميز',
-  bio: 'لا تؤجل عمل اليوم إلى الغد.. بالجد والاجتهاد نصل إلى القمة! 🚀',
-  dreamGoal: 'التفوق والامتياز 🌟',
-  schoolOrUniversity: '',
+  bio: 'لا تؤجل عمل اليوم إلى الغد.. بالجد والاجتهاد نصل إلى القمة!',
+  dreamGoal: 'التفوق والامتياز مع مرتبة الشرف',
+  schoolOrUniversity: 'جامعة القاهرة — هندسة وحاسبات',
   targetGPA: 'امتياز (A+)',
   avatarType: 'emoji',
   avatarValue: '🎓',
-  onboarded: false,
+  onboarded: true,
+  xpPoints: 0,
+  streakDays: 1,
+  level: 1,
 };
 
 export const INITIAL_LESSONS: Lesson[] = [

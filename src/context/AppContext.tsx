@@ -99,6 +99,7 @@ interface AppContextType {
   // Backup & Restore
   exportBackupData: () => AppBackupData;
   importBackupData: (data: AppBackupData) => boolean;
+  resetAllData: () => void;
 
   // Toast Alerts
   showToast: (message: string, type?: 'success' | 'warning' | 'info') => void;
@@ -591,9 +592,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (data.profile) setProfile(data.profile);
       if (Array.isArray(data.lessons)) setLessons(data.lessons);
       if (Array.isArray(data.tasks)) setTasks(data.tasks);
-      if (Array.isArray(data.notes)) setNotes(data.notes);
-      if (Array.isArray(data.studyPlans)) setStudyPlans(data.studyPlans);
-      if (data.lessonCompletions) setLessonCompletions(data.lessonCompletions);
       if (data.prayersCompleted) setPrayersCompleted(data.prayersCompleted);
       if (data.settings) setSettings(data.settings);
       showToast(settings.language === 'en' ? 'Backup restored successfully!' : 'تم استعادة النسخة الاحتياطية بنجاح!', 'success');
@@ -603,6 +601,36 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       showToast(settings.language === 'en' ? 'Failed to restore backup file' : 'فشل استعادة الملف. يرجى التأكد من اختيار ملف JSON صحيح.', 'warning');
       return false;
     }
+  };
+  const resetAllData = () => {
+    // 1. Reset profile stats
+    setProfile(prev => ({
+      ...prev,
+      xpPoints: 0,
+      streakDays: 1,
+      level: 1,
+    }));
+
+    // 2. Reset completions and trackers
+    setLessonCompletions({});
+    setPrayersCompleted({});
+    setTasks(prev => prev.map(t => ({ ...t, completed: false })));
+    setStudyPlans([]);
+
+    // 3. Reset settings counters
+    setSettings(prev => ({
+      ...prev,
+      tasbeehTotalCount: 0,
+      quranPagesRead: 0,
+    }));
+
+    // 4. Clear storage records
+    localStorage.removeItem(STORAGE_KEYS.COMPLETIONS);
+    localStorage.removeItem(STORAGE_KEYS.PRAYERS);
+    localStorage.removeItem(STORAGE_KEYS.STUDY_PLANS);
+
+    haptic.success();
+    showToast(settings.language === 'en' ? 'All records and calculations reset to zero!' : 'تم تصفير كافة الحسابات والسجلات بنجاح!', 'success');
   };
 
   return (
@@ -614,6 +642,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setIsEditProfileOpen,
         isOnboardingOpen,
         setIsOnboardingOpen,
+        resetAllData,
 
         lessons,
         setLessons: handleSetLessons,

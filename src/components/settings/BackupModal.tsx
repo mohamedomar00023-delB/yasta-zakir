@@ -11,6 +11,7 @@ export const BackupModal: React.FC = () => {
     setIsBackupModalOpen,
     exportBackupData,
     importBackupData,
+    resetAllData,
     settings,
     updateSettings,
     showToast,
@@ -229,6 +230,28 @@ export const BackupModal: React.FC = () => {
                 className="hidden"
                 onChange={handleImportFile}
               />
+            </div>
+
+            {/* Reset All Stats & Records */}
+            <div className="p-4 rounded-2xl bg-rose-950/20 border border-rose-500/30 flex items-center justify-between gap-4">
+              <div>
+                <h4 className="text-sm font-bold text-rose-300">{isAr ? 'تصفير كافة الحسابات والسجلات' : 'Reset All Stats & Records'}</h4>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  {isAr ? 'إعادة تعيين نقاط XP، الستريك، سجلات الصلاة، وإنجاز الواجبات للبداية من الصفر' : 'Reset XP points, streaks, prayer logs, and completed tasks to zero.'}
+                </p>
+              </div>
+
+              <button
+                onClick={() => {
+                  if (window.confirm(isAr ? 'هل أنت متأكد من تصفير كافة الحسابات ونقاط XP وسجلات الصلاة والبدء من جديد؟' : 'Are you sure you want to reset all calculations, XP points, and prayer logs?')) {
+                    resetAllData();
+                    setIsBackupModalOpen(false);
+                  }
+                }}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-rose-600/30 hover:bg-rose-600 border border-rose-500 text-rose-200 hover:text-white font-bold text-xs whitespace-nowrap transition-all"
+              >
+                <span>{isAr ? 'تصفير الحسابات 🔄' : 'Reset All 🔄'}</span>
+              </button>
             </div>
 
           </div>

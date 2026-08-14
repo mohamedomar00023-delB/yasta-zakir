@@ -13,6 +13,7 @@ export interface UserProfile {
   academicTrack?: string; // e.g. "علمي علوم", "علمي رياضة", "علوم تجريبية", "علوم رياضية"
   xpPoints?: number; // XP points accumulated from completing tasks/prayers/lessons
   streakDays?: number; // Consecutive streak days
+  level?: number;
   avatarType: AvatarType;
   avatarValue: string; // URL, emoji string, or preset ID
   onboarded: boolean;
