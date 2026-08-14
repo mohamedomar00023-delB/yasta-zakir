@@ -6,6 +6,9 @@ let masterGain: GainNode | null = null;
 // Track active HTML5 audio element (for real MP3 Adhan streaming)
 let activeAudioElement: HTMLAudioElement | null = null;
 
+// Active notification timeout
+let activeNotificationTimer: any = null;
+
 // Ambient sound active nodes
 let ambientOscillators: { stop: () => void }[] = [];
 
@@ -44,10 +47,15 @@ export const stopActiveAudio = () => {
     try {
       activeAudioElement.pause();
       activeAudioElement.currentTime = 0;
+      activeAudioElement.src = '';
     } catch {
       // ignore
     }
     activeAudioElement = null;
+  }
+  if (activeNotificationTimer) {
+    clearTimeout(activeNotificationTimer);
+    activeNotificationTimer = null;
   }
 };
 
@@ -58,7 +66,7 @@ export const stopActiveAudio = () => {
 const ADHAN_STREAMS: Record<Exclude<AdhanSoundId, 'silent'>, { primary: string; fallback?: string }> = {
   'makkah': {
     primary: 'https://cdn.aladhan.com/audio/adhans/c1.mp3',
-    fallback: 'https://media.sd.ma/assabile/adhan_34353/makkah.mp3',
+    fallback: 'https://cdn.islamic.network/adhans/makkah.mp3',
   },
   'madinah': {
     primary: 'https://cdn.aladhan.com/audio/adhans/a3.mp3',
@@ -66,6 +74,7 @@ const ADHAN_STREAMS: Record<Exclude<AdhanSoundId, 'silent'>, { primary: string; 
   },
   'alaqsa': {
     primary: 'https://cdn.aladhan.com/audio/adhans/a1.mp3',
+    fallback: 'https://cdn.aladhan.com/audio/adhans/c1.mp3',
   },
   'egypt-refaat': {
     primary: 'https://cdn.aladhan.com/audio/adhans/a4.mp3',
@@ -73,12 +82,15 @@ const ADHAN_STREAMS: Record<Exclude<AdhanSoundId, 'silent'>, { primary: string; 
   },
   'abdulbasit': {
     primary: 'https://cdn.aladhan.com/audio/adhans/a2.mp3',
+    fallback: 'https://cdn.aladhan.com/audio/adhans/a1.mp3',
   },
   'takbeer-short': {
     primary: 'https://cdn.aladhan.com/audio/adhans/a3.mp3',
+    fallback: 'https://cdn.aladhan.com/audio/adhans/c1.mp3',
   },
   'nasr-tobbar': {
     primary: 'https://cdn.aladhan.com/audio/adhans/a4.mp3',
+    fallback: 'https://cdn.aladhan.com/audio/adhans/c1.mp3',
   },
   'fajr-special': {
     primary: 'https://cdn.aladhan.com/audio/adhans/fajr1.mp3',
@@ -87,11 +99,18 @@ const ADHAN_STREAMS: Record<Exclude<AdhanSoundId, 'silent'>, { primary: string; 
 };
 
 /**
- * Play Adhan recitation by sound ID
+ * Play Adhan recitation by sound ID with onEnded callback support
  */
-export const playAdhan = (soundId: AdhanSoundId = 'makkah', volume: number = 0.8) => {
+export const playAdhan = (
+  soundId: AdhanSoundId = 'makkah', 
+  volume: number = 0.8,
+  onEnded?: () => void
+) => {
   stopActiveAudio();
-  if (soundId === 'silent') return;
+  if (soundId === 'silent') {
+    if (onEnded) onEnded();
+    return;
+  }
 
   const streamInfo = ADHAN_STREAMS[soundId] || ADHAN_STREAMS['makkah'];
 
@@ -99,35 +118,52 @@ export const playAdhan = (soundId: AdhanSoundId = 'makkah', volume: number = 0.8
     const audio = new Audio(streamInfo.primary);
     audio.volume = Math.max(0, Math.min(1, volume));
     
+    audio.onended = () => {
+      activeAudioElement = null;
+      if (onEnded) onEnded();
+    };
+
+    audio.onerror = () => {
+      // Fallback stream or synthesizer
+      if (streamInfo.fallback) {
+        const fallbackAudio = new Audio(streamInfo.fallback);
+        fallbackAudio.volume = Math.max(0, Math.min(1, volume));
+        fallbackAudio.onended = () => {
+          activeAudioElement = null;
+          if (onEnded) onEnded();
+        };
+        fallbackAudio.onerror = () => {
+          playSynthesizedTakbeer(volume, onEnded);
+        };
+        fallbackAudio.play().catch(() => playSynthesizedTakbeer(volume, onEnded));
+        activeAudioElement = fallbackAudio;
+      } else {
+        playSynthesizedTakbeer(volume, onEnded);
+      }
+    };
+
     const playPromise = audio.play();
     if (playPromise !== undefined) {
       playPromise.catch(() => {
-        // Try secondary fallback stream or synthesized Takbeer
-        if (streamInfo.fallback) {
-          const fallbackAudio = new Audio(streamInfo.fallback);
-          fallbackAudio.volume = Math.max(0, Math.min(1, volume));
-          fallbackAudio.play().catch(() => playSynthesizedTakbeer(volume));
-          activeAudioElement = fallbackAudio;
-        } else {
-          playSynthesizedTakbeer(volume);
-        }
+        playSynthesizedTakbeer(volume, onEnded);
       });
     }
     activeAudioElement = audio;
   } catch {
-    playSynthesizedTakbeer(volume);
+    playSynthesizedTakbeer(volume, onEnded);
   }
 };
 
 /**
  * Synthesized Maqam Rast / Bayati Adhan Takbeer (100% Offline fallback)
  */
-export function playSynthesizedTakbeer(volume: number = 0.8) {
+export function playSynthesizedTakbeer(volume: number = 0.8, onEnded?: () => void) {
   try {
     const { ctx, master } = getAudioContext();
     const now = ctx.currentTime;
     // Takbeer notes (Allahu Akbar): D4, F4, G4, A4, G4, F4, D4
     const notes = [293.66, 349.23, 392.00, 440.00, 392.00, 349.23, 293.66];
+    const totalDuration = notes.length * 0.35 + 1.2;
 
     notes.forEach((freq, idx) => {
       const osc = ctx.createOscillator();
@@ -146,8 +182,15 @@ export function playSynthesizedTakbeer(volume: number = 0.8) {
       osc.start(now + idx * 0.35);
       osc.stop(now + idx * 0.35 + 1.3);
     });
+
+    if (onEnded) {
+      activeNotificationTimer = setTimeout(() => {
+        onEnded();
+      }, totalDuration * 1000);
+    }
   } catch (err) {
     console.warn('Takbeer synthesizer error:', err);
+    if (onEnded) onEnded();
   }
 }
 
@@ -156,21 +199,29 @@ export function playSynthesizedTakbeer(volume: number = 0.8) {
 // ==========================================
 
 /**
- * Plays modern / oriental synthesized notification sound
+ * Plays synthesized notification sound with onEnded callback support
  */
-export const playNotificationSound = (soundId: NotificationSoundId = 'soft-bell', volume: number = 0.8) => {
+export const playNotificationSound = (
+  soundId: NotificationSoundId = 'soft-bell', 
+  volume: number = 0.8,
+  onEnded?: () => void
+) => {
   stopActiveAudio();
-  if (soundId === 'silent') return;
+  if (soundId === 'silent') {
+    if (onEnded) onEnded();
+    return;
+  }
 
   try {
     const { ctx, master } = getAudioContext();
     const now = ctx.currentTime;
     const vol = Math.max(0, Math.min(1, volume));
+    let approxDuration = 1.6;
 
     switch (soundId) {
       case 'soft-bell': {
-        // F4, A4, C5, F5 with smooth decay
         const freqs = [349.23, 440.00, 523.25, 698.46];
+        approxDuration = 1.8;
         freqs.forEach((freq, i) => {
           const osc = ctx.createOscillator();
           const gain = ctx.createGain();
@@ -188,8 +239,8 @@ export const playNotificationSound = (soundId: NotificationSoundId = 'soft-bell'
       }
 
       case 'crystal-ping': {
-        // C5, E5, G5, C6 high sparkle
         const freqs = [523.25, 659.25, 783.99, 1046.50];
+        approxDuration = 1.9;
         freqs.forEach((freq, i) => {
           const osc = ctx.createOscillator();
           const gain = ctx.createGain();
@@ -207,8 +258,8 @@ export const playNotificationSound = (soundId: NotificationSoundId = 'soft-bell'
       }
 
       case 'oud-melody': {
-        // Plucked acoustic oriental notes D4, F#4, A4, D5
         const freqs = [293.66, 369.99, 440.00, 587.33];
+        approxDuration = 1.6;
         freqs.forEach((freq, i) => {
           const osc = ctx.createOscillator();
           const gain = ctx.createGain();
@@ -226,8 +277,8 @@ export const playNotificationSound = (soundId: NotificationSoundId = 'soft-bell'
       }
 
       case 'gentle-piano': {
-        // G4, B4, D5, G5 harmonic piano chords
         const freqs = [392.00, 493.88, 587.33, 783.99];
+        approxDuration = 2.0;
         freqs.forEach((freq, i) => {
           const osc = ctx.createOscillator();
           const gain = ctx.createGain();
@@ -245,8 +296,8 @@ export const playNotificationSound = (soundId: NotificationSoundId = 'soft-bell'
       }
 
       case 'success-horizon': {
-        // Uplifting celebratory arpeggio: C5 -> E5 -> G5 -> B5 -> C6
         const freqs = [523.25, 659.25, 783.99, 987.77, 1046.50];
+        approxDuration = 1.7;
         freqs.forEach((freq, i) => {
           const osc = ctx.createOscillator();
           const gain = ctx.createGain();
@@ -264,7 +315,7 @@ export const playNotificationSound = (soundId: NotificationSoundId = 'soft-bell'
       }
 
       case 'modern-ping': {
-        // Dual tech ping (880Hz -> 1320Hz)
+        approxDuration = 0.5;
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = 'sine';
@@ -281,7 +332,7 @@ export const playNotificationSound = (soundId: NotificationSoundId = 'soft-bell'
       }
 
       case 'birds-nature': {
-        // Frequency-modulated sweet bird chirp
+        approxDuration = 0.9;
         [0, 0.18, 0.36].forEach((timeOffset, idx) => {
           const osc = ctx.createOscillator();
           const gain = ctx.createGain();
@@ -302,7 +353,7 @@ export const playNotificationSound = (soundId: NotificationSoundId = 'soft-bell'
       }
 
       case 'water-drop': {
-        // Resonant pitch-swept water droplet sound
+        approxDuration = 0.45;
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = 'sine';
@@ -320,7 +371,7 @@ export const playNotificationSound = (soundId: NotificationSoundId = 'soft-bell'
       }
 
       case 'marimba-pop': {
-        // Crisp wooden acoustic marimba strike
+        approxDuration = 0.4;
         const freqs = [587.33, 880.00];
         freqs.forEach((freq, i) => {
           const osc = ctx.createOscillator();
@@ -339,7 +390,7 @@ export const playNotificationSound = (soundId: NotificationSoundId = 'soft-bell'
       }
 
       case 'subtle-breeze': {
-        // Meditative Tibetan singing bowl resonance
+        approxDuration = 2.4;
         const osc = ctx.createOscillator();
         const oscHarmonic = ctx.createOscillator();
         const gain = ctx.createGain();
@@ -360,8 +411,15 @@ export const playNotificationSound = (soundId: NotificationSoundId = 'soft-bell'
         break;
       }
     }
+
+    if (onEnded) {
+      activeNotificationTimer = setTimeout(() => {
+        onEnded();
+      }, approxDuration * 1000);
+    }
   } catch (err) {
     console.warn('Notification sound error:', err);
+    if (onEnded) onEnded();
   }
 };
 

@@ -168,6 +168,7 @@ export interface AppSettings {
   notificationSound?: NotificationSoundId;
   volume: number; // 0 to 1
   soundEnabled: boolean;
+  hapticsEnabled?: boolean;
   notificationsEnabled: boolean;
   reminderMinutesBeforeLesson: number; // 10, 15, or 30
   reminderMinutesBeforeTask?: number; // 15, 30, 60

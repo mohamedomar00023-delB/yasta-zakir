@@ -10,18 +10,17 @@ import {
   Square, 
   Play, 
   Bell, 
-  Moon, 
-  Music, 
-  Compass, 
   Radio,
   Sliders,
-  CheckCircle2
+  Smartphone,
+  Zap,
+  Vibrate
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { THEME_CONFIGS } from '../../utils/themes';
 import { AdhanSoundId, NotificationSoundId, ThemeId } from '../../types';
 import { playAdhan, playNotificationSound, stopActiveAudio, setMasterVolume } from '../../utils/sound';
-import { haptic } from '../../utils/haptics';
+import { haptic, setHapticsEnabled } from '../../utils/haptics';
 
 export const ThemeSelectorModal: React.FC = () => {
   const {
@@ -39,7 +38,7 @@ export const ThemeSelectorModal: React.FC = () => {
   if (!isThemeModalOpen) return null;
 
   const handleSelectTheme = (themeId: ThemeId) => {
-    haptic.light();
+    haptic.selection();
     const config = THEME_CONFIGS[themeId];
     updateSettings({
       themeId,
@@ -49,7 +48,7 @@ export const ThemeSelectorModal: React.FC = () => {
   };
 
   const handleSelectAdhan = (soundId: AdhanSoundId, previewName: string) => {
-    haptic.medium();
+    haptic.prayer();
     updateSettings({ adhanSound: soundId });
     if (soundId === 'silent') {
       stopActiveAudio();
@@ -59,12 +58,14 @@ export const ThemeSelectorModal: React.FC = () => {
     }
 
     setCurrentlyPlayingId(soundId);
-    playAdhan(soundId, settings.volume ?? 0.8);
+    playAdhan(soundId, settings.volume ?? 0.8, () => {
+      setCurrentlyPlayingId(null);
+    });
     showToast(isAr ? `تم اختيار: ${previewName}` : `Selected: ${previewName}`, 'info');
   };
 
   const handleSelectNotification = (soundId: NotificationSoundId, previewName: string) => {
-    haptic.light();
+    haptic.notification();
     updateSettings({ notificationSound: soundId, chimeTone: soundId as any });
     if (soundId === 'silent') {
       stopActiveAudio();
@@ -74,7 +75,9 @@ export const ThemeSelectorModal: React.FC = () => {
     }
 
     setCurrentlyPlayingId(soundId);
-    playNotificationSound(soundId, settings.volume ?? 0.8);
+    playNotificationSound(soundId, settings.volume ?? 0.8, () => {
+      setCurrentlyPlayingId(null);
+    });
     showToast(isAr ? `تم اختيار: ${previewName}` : `Selected: ${previewName}`, 'info');
   };
 
@@ -88,6 +91,23 @@ export const ThemeSelectorModal: React.FC = () => {
   const handleVolumeChange = (vol: number) => {
     updateSettings({ volume: vol });
     setMasterVolume(vol);
+  };
+
+  const handleToggleHaptics = () => {
+    const next = !(settings.hapticsEnabled ?? true);
+    updateSettings({ hapticsEnabled: next });
+    setHapticsEnabled(next);
+    if (next) {
+      haptic.celebration();
+      showToast(isAr ? 'تم تفعيل الاهتزازات التفاعلية 📳' : 'Haptic vibration enabled 📳', 'success');
+    } else {
+      showToast(isAr ? 'تم تعطيل الاهتزازات 📴' : 'Haptic vibration disabled 📴', 'info');
+    }
+  };
+
+  const handleTestHaptic = () => {
+    haptic.celebration();
+    showToast(isAr ? '📳 جاري إرسال نبضات اهتزاز تفاعلية (Haptic Pulse)...' : '📳 Testing Haptic Vibration Pulse...', 'info');
   };
 
   const handleClose = () => {
@@ -165,8 +185,8 @@ export const ThemeSelectorModal: React.FC = () => {
       id: 'silent',
       titleAr: 'صامت (بدون صوت أذان) 🔇',
       titleEn: 'Silent (Mute Adhan) 🔇',
-      descAr: 'تنبيه بصري وإشعارات نصية فقط بدون صوت',
-      descEn: 'Visual text notifications only without audio',
+      descAr: 'تنبيه بصري واهتزاز تفاعلي بدون صوت',
+      descEn: 'Visual and haptic vibration only without audio',
       badge: 'كتم الصوت 🔇',
     },
   ];
@@ -291,11 +311,11 @@ export const ThemeSelectorModal: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="text-base sm:text-lg font-black flex items-center gap-1.5" style={{ color: 'var(--text-color)' }}>
-                    <span>{isAr ? 'استوديو الأصوات والمظهر' : 'Audio & Themes Studio'}</span>
+                    <span>{isAr ? 'استوديو الأصوات والمظهر والاهتزازات' : 'Audio, Haptics & Themes Studio'}</span>
                     <Sparkles className="w-4 h-4 text-amber-400" />
                   </h3>
                   <p className="text-[11px] sm:text-xs text-slate-400">
-                    {isAr ? 'خصص أصوات الأذان ونغمات الإشعارات وثيم التطبيق' : 'Customize Adhan voices, notification tones & visual themes'}
+                    {isAr ? 'خصص أصوات الأذان ونغمات الإشعارات والاهتزازات وثيم التطبيق' : 'Customize Adhan voices, notification tones, haptics & themes'}
                   </p>
                 </div>
               </div>
@@ -325,7 +345,7 @@ export const ThemeSelectorModal: React.FC = () => {
             <div className="flex items-center p-1 rounded-2xl bg-slate-900/80 border border-slate-800 mb-5 gap-1 shadow-inner">
               <button
                 onClick={() => {
-                  haptic.light();
+                  haptic.selection();
                   setActiveTab('adhan');
                 }}
                 className={`flex-1 py-2 px-2.5 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 ${
@@ -340,7 +360,7 @@ export const ThemeSelectorModal: React.FC = () => {
 
               <button
                 onClick={() => {
-                  haptic.light();
+                  haptic.selection();
                   setActiveTab('notifications');
                 }}
                 className={`flex-1 py-2 px-2.5 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 ${
@@ -355,7 +375,7 @@ export const ThemeSelectorModal: React.FC = () => {
 
               <button
                 onClick={() => {
-                  haptic.light();
+                  haptic.selection();
                   setActiveTab('themes');
                 }}
                 className={`flex-1 py-2 px-2.5 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 ${
@@ -378,11 +398,11 @@ export const ThemeSelectorModal: React.FC = () => {
                     <span>{isAr ? 'اختر صوت المؤذن المفضل لمواقيت الصلاة:' : 'Select your favorite Adhan reciter:'}</span>
                   </span>
                   <span className="text-[11px] text-indigo-400 font-bold bg-indigo-500/10 px-2 py-0.5 rounded-full border border-indigo-500/20">
-                    {isAr ? 'يعمل بالكامل أوفلاين ⚡' : '100% Offline Ready ⚡'}
+                    {isAr ? 'دعم الأوفلاين ⚡' : '100% Offline Ready ⚡'}
                   </span>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-[50vh] overflow-y-auto pr-1">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-[48vh] overflow-y-auto pr-1">
                   {ADHAN_OPTIONS.map((item) => {
                     const isSelected = (settings.adhanSound || 'makkah') === item.id;
                     const isPlaying = currentlyPlayingId === item.id;
@@ -447,7 +467,7 @@ export const ThemeSelectorModal: React.FC = () => {
                   </span>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-[50vh] overflow-y-auto pr-1">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-[48vh] overflow-y-auto pr-1">
                   {NOTIFICATION_OPTIONS.map((item) => {
                     const isSelected = (settings.notificationSound || 'soft-bell') === item.id;
                     const isPlaying = currentlyPlayingId === item.id;
@@ -537,35 +557,64 @@ export const ThemeSelectorModal: React.FC = () => {
               </div>
             )}
 
-            {/* Master Audio Controls Bar */}
-            <div className="mt-5 p-3.5 rounded-2xl bg-slate-900/60 border border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-3">
+            {/* Master Audio & Haptics Controls Bar */}
+            <div className="mt-5 p-3.5 rounded-2xl bg-slate-900/60 border border-slate-800/80 flex flex-col gap-3">
               
-              {/* Sound Enabled Switch */}
-              <div className="flex items-center justify-between w-full sm:w-auto gap-3">
+              {/* Row 1: Audio Switch & Haptics Switch */}
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                
+                {/* Sound Toggle */}
                 <button
                   onClick={() => {
-                    haptic.light();
+                    haptic.selection();
                     const next = !settings.soundEnabled;
                     updateSettings({ soundEnabled: next });
                     if (!next) stopActiveAudio();
                     showToast(next ? (isAr ? 'تم تفعيل الأصوات 🔊' : 'Audio enabled 🔊') : (isAr ? 'تم كتم جميع الأصوات 🔇' : 'All audio muted 🔇'), 'info');
                   }}
-                  className={`px-3 py-1.5 rounded-xl border text-xs font-black flex items-center gap-1.5 transition-all ${
+                  className={`px-3 py-1.5 rounded-xl border text-xs font-black flex items-center gap-1.5 transition-all active:scale-95 ${
                     settings.soundEnabled
                       ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/25'
                       : 'bg-rose-500/15 border-rose-500/30 text-rose-400 hover:bg-rose-500/25'
                   }`}
                 >
                   {settings.soundEnabled ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
-                  <span>{settings.soundEnabled ? (isAr ? 'الأصوات مفعلة' : 'Sound ON') : (isAr ? 'الأصوات مكتومة' : 'Sound OFF')}</span>
+                  <span>{settings.soundEnabled ? (isAr ? 'الأصوات مفعلة 🔊' : 'Sound ON') : (isAr ? 'الأصوات مكتومة 🔇' : 'Sound OFF')}</span>
                 </button>
+
+                {/* Haptics Toggle & Test */}
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={handleToggleHaptics}
+                    className={`px-3 py-1.5 rounded-xl border text-xs font-black flex items-center gap-1.5 transition-all active:scale-95 ${
+                      (settings.hapticsEnabled ?? true)
+                        ? 'bg-indigo-500/15 border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/25'
+                        : 'bg-slate-800/60 border-slate-700 text-slate-400'
+                    }`}
+                  >
+                    <Vibrate className="w-3.5 h-3.5" />
+                    <span>{(settings.hapticsEnabled ?? true) ? (isAr ? 'الاهتزازات مفعلة 📳' : 'Haptics ON') : (isAr ? 'الاهتزازات معطلة 📴' : 'Haptics OFF')}</span>
+                  </button>
+
+                  {(settings.hapticsEnabled ?? true) && (
+                    <button
+                      onClick={handleTestHaptic}
+                      className="px-2.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center gap-1 shadow-sm active:scale-95"
+                      title={isAr ? 'تجربة نبضة الاهتزاز' : 'Test Vibration'}
+                    >
+                      <Zap className="w-3.5 h-3.5" />
+                      <span>{isAr ? 'تجربة 📳' : 'Test'}</span>
+                    </button>
+                  )}
+                </div>
+
               </div>
 
-              {/* Volume Slider */}
-              <div className="flex items-center gap-3 w-full sm:w-64">
+              {/* Row 2: Volume Slider */}
+              <div className="flex items-center gap-3 w-full pt-2 border-t border-slate-800/50">
                 <span className="text-xs font-bold text-slate-300 flex items-center gap-1 shrink-0">
                   <Sliders className="w-3.5 h-3.5 text-indigo-400" />
-                  <span>{isAr ? 'الصوت:' : 'Volume:'}</span>
+                  <span>{isAr ? 'مستوى الصوت العام:' : 'Master Volume:'}</span>
                   <strong className="text-indigo-400">{Math.round((settings.volume ?? 0.8) * 100)}%</strong>
                 </span>
 

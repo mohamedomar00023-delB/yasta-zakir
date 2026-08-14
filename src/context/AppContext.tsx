@@ -133,6 +133,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   notificationSound: 'soft-bell',
   volume: 0.8,
   soundEnabled: true,
+  hapticsEnabled: true,
   notificationsEnabled: false,
   reminderMinutesBeforeLesson: 15,
   reminderMinutesBeforeTask: 30,
