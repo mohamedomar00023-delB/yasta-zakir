@@ -10,6 +10,8 @@ import { QiblaCard } from './components/prayer/QiblaCard';
 import { ConflictBanner } from './components/prayer/ConflictBanner';
 import { ProgressBarCard } from './components/dashboard/ProgressBarCard';
 import { StudentRankBadge } from './components/dashboard/StudentRankBadge';
+import { DailyQuote } from './components/dashboard/DailyQuote';
+import { PomodoroTimer } from './components/pomodoro/PomodoroTimer';
 import { TodaySchedule } from './components/lessons/TodaySchedule';
 import { WeeklyScheduleView } from './components/lessons/WeeklyScheduleView';
 import { TaskManager } from './components/tasks/TaskManager';
@@ -124,6 +126,9 @@ const DashboardContent: React.FC = () => {
               onRefreshLocation={refetch}
             />
 
+            {/* Daily Quote & Hadith Inspiration */}
+            <DailyQuote />
+
             {/* Qibla Compass + Prayer Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               <div className="lg:col-span-2">
@@ -143,6 +148,9 @@ const DashboardContent: React.FC = () => {
 
             {/* Gamified XP Rank Badge */}
             <StudentRankBadge />
+
+            {/* Pomodoro Focus Studio */}
+            <PomodoroTimer />
 
             {/* Main Today Schedule & Tasks Split Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
