@@ -610,8 +610,55 @@ export const ThemeSelectorModal: React.FC = () => {
 
               </div>
 
-              {/* Row 2: Volume Slider */}
-              <div className="flex items-center gap-3 w-full pt-2 border-t border-slate-800/50">
+              {/* Row 2: Smart Audio Toggles */}
+              <div className="pt-2.5 border-t border-slate-800/50 space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-bold text-slate-200 flex items-center gap-1.5">
+                    <span>🌙</span>
+                    <span>{isAr ? 'الوضع الليلي الذكي للأصوات (11م - 5ص)' : 'Smart Quiet Hours (11PM - 5AM)'}</span>
+                  </span>
+                  <button
+                    onClick={() => {
+                      haptic.selection();
+                      const next = !(settings.quietHoursEnabled ?? true);
+                      updateSettings({ quietHoursEnabled: next });
+                      showToast(next ? (isAr ? 'تم تفعيل الوضع الليلي الهادئ 🌙' : 'Quiet hours enabled 🌙') : (isAr ? 'تم تعطيل الوضع الليلي' : 'Quiet hours disabled'), 'info');
+                    }}
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-black transition-all ${
+                      (settings.quietHoursEnabled ?? true)
+                        ? 'bg-amber-500/20 border border-amber-500/40 text-amber-300'
+                        : 'bg-slate-800 border border-slate-700 text-slate-400'
+                    }`}
+                  >
+                    {(settings.quietHoursEnabled ?? true) ? (isAr ? 'مفعل ✓' : 'ON ✓') : (isAr ? 'معطل' : 'OFF')}
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-bold text-slate-200 flex items-center gap-1.5">
+                    <span>📈</span>
+                    <span>{isAr ? 'التدرج الصوتي السلس للأذان (Fade-In)' : 'Gentle Spiritual Fade-In'}</span>
+                  </span>
+                  <button
+                    onClick={() => {
+                      haptic.selection();
+                      const next = !(settings.gentleFadeIn ?? true);
+                      updateSettings({ gentleFadeIn: next });
+                      showToast(next ? (isAr ? 'تم تفعيل التدرج الصوتي 📈' : 'Fade-in enabled 📈') : (isAr ? 'تم تعطيل التدرج الصوتي' : 'Fade-in disabled'), 'info');
+                    }}
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-black transition-all ${
+                      (settings.gentleFadeIn ?? true)
+                        ? 'bg-indigo-500/20 border border-indigo-500/40 text-indigo-300'
+                        : 'bg-slate-800 border border-slate-700 text-slate-400'
+                    }`}
+                  >
+                    {(settings.gentleFadeIn ?? true) ? (isAr ? 'مفعل ✓' : 'ON ✓') : (isAr ? 'معطل' : 'OFF')}
+                  </button>
+                </div>
+              </div>
+
+              {/* Row 3: Volume Slider */}
+              <div className="flex items-center gap-3 w-full pt-2.5 border-t border-slate-800/50">
                 <span className="text-xs font-bold text-slate-300 flex items-center gap-1 shrink-0">
                   <Sliders className="w-3.5 h-3.5 text-indigo-400" />
                   <span>{isAr ? 'مستوى الصوت العام:' : 'Master Volume:'}</span>

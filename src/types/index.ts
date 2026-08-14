@@ -169,6 +169,9 @@ export interface AppSettings {
   volume: number; // 0 to 1
   soundEnabled: boolean;
   hapticsEnabled?: boolean;
+  smartAudioEnabled?: boolean; // Smart volume & anti-overlap intelligence
+  gentleFadeIn?: boolean; // Smooth spiritual volume ramp-up
+  quietHoursEnabled?: boolean; // Night quiet mode (11PM - 5AM)
   notificationsEnabled: boolean;
   reminderMinutesBeforeLesson: number; // 10, 15, or 30
   reminderMinutesBeforeTask?: number; // 15, 30, 60

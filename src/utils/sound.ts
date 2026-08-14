@@ -6,11 +6,14 @@ let masterGain: GainNode | null = null;
 // Track active HTML5 audio element (for real MP3 Adhan streaming)
 let activeAudioElement: HTMLAudioElement | null = null;
 
-// Active notification timeout
+// Active notification timer
 let activeNotificationTimer: any = null;
 
 // Ambient sound active nodes
 let ambientOscillators: { stop: () => void }[] = [];
+
+// Track if audio context is primed
+let isAudioPrimed = false;
 
 export const getAudioContext = (): { ctx: AudioContext; master: GainNode } => {
   if (!audioCtx) {
@@ -26,6 +29,27 @@ export const getAudioContext = (): { ctx: AudioContext; master: GainNode } => {
   return { ctx: audioCtx, master: masterGain! };
 };
 
+// Prime audio context on initial user gesture anywhere on screen
+if (typeof window !== 'undefined') {
+  const primeAudio = () => {
+    if (!isAudioPrimed) {
+      try {
+        const { ctx } = getAudioContext();
+        if (ctx.state === 'suspended') {
+          ctx.resume();
+        }
+        isAudioPrimed = true;
+      } catch {
+        // ignore
+      }
+    }
+  };
+
+  window.addEventListener('click', primeAudio, { once: true, passive: true });
+  window.addEventListener('touchstart', primeAudio, { once: true, passive: true });
+  window.addEventListener('keydown', primeAudio, { once: true, passive: true });
+}
+
 export const setMasterVolume = (vol: number) => {
   const clamped = Math.max(0, Math.min(1, vol));
   try {
@@ -37,6 +61,25 @@ export const setMasterVolume = (vol: number) => {
   if (activeAudioElement) {
     activeAudioElement.volume = clamped;
   }
+};
+
+/**
+ * Calculates smart adjusted volume considering Night Quiet Hours (11 PM - 5 AM)
+ */
+export const calculateSmartVolume = (
+  baseVolume: number = 0.8,
+  options?: { quietHours?: boolean; isAdhan?: boolean }
+): number => {
+  const vol = Math.max(0, Math.min(1, baseVolume));
+  const currentHour = new Date().getHours();
+  const isNightTime = currentHour >= 23 || currentHour < 5;
+
+  if (options?.quietHours && isNightTime) {
+    // Soft night volume
+    return Math.min(vol, options?.isAdhan ? 0.45 : 0.3);
+  }
+
+  return vol;
 };
 
 /**
@@ -99,12 +142,13 @@ const ADHAN_STREAMS: Record<Exclude<AdhanSoundId, 'silent'>, { primary: string; 
 };
 
 /**
- * Play Adhan recitation by sound ID with onEnded callback support
+ * Play Adhan recitation with smart volume, gentle fade-in, and fallbacks
  */
 export const playAdhan = (
   soundId: AdhanSoundId = 'makkah', 
   volume: number = 0.8,
-  onEnded?: () => void
+  onEnded?: () => void,
+  options?: { gentleFadeIn?: boolean; quietHours?: boolean }
 ) => {
   stopActiveAudio();
   if (soundId === 'silent') {
@@ -112,13 +156,33 @@ export const playAdhan = (
     return;
   }
 
+  const finalVolume = calculateSmartVolume(volume, { quietHours: options?.quietHours ?? true, isAdhan: true });
   const streamInfo = ADHAN_STREAMS[soundId] || ADHAN_STREAMS['makkah'];
 
   try {
     const audio = new Audio();
     audio.src = streamInfo.primary;
     audio.preload = 'auto';
-    audio.volume = Math.max(0, Math.min(1, volume));
+
+    // Gentle spiritual fade-in if requested
+    if (options?.gentleFadeIn !== false) {
+      audio.volume = Math.min(0.25, finalVolume);
+      let currentVol = audio.volume;
+      const fadeInterval = setInterval(() => {
+        if (!activeAudioElement || activeAudioElement !== audio) {
+          clearInterval(fadeInterval);
+          return;
+        }
+        if (currentVol < finalVolume) {
+          currentVol = Math.min(finalVolume, currentVol + 0.08);
+          audio.volume = currentVol;
+        } else {
+          clearInterval(fadeInterval);
+        }
+      }, 300);
+    } else {
+      audio.volume = finalVolume;
+    }
     
     audio.onended = () => {
       activeAudioElement = null;
@@ -127,49 +191,47 @@ export const playAdhan = (
 
     audio.onerror = () => {
       console.warn('Primary stream failed, attempting secondary fallback for', soundId);
-      // Secondary fallback
       try {
         const fallbackAudio = new Audio();
         fallbackAudio.src = streamInfo.fallback;
         fallbackAudio.preload = 'auto';
-        fallbackAudio.volume = Math.max(0, Math.min(1, volume));
+        fallbackAudio.volume = finalVolume;
         fallbackAudio.onended = () => {
           activeAudioElement = null;
           if (onEnded) onEnded();
         };
         fallbackAudio.onerror = () => {
-          console.warn('Fallback stream failed, using synthesized Takbeer');
-          playSynthesizedTakbeer(volume, onEnded);
+          playSynthesizedTakbeer(finalVolume, onEnded);
         };
-        fallbackAudio.play().catch(() => playSynthesizedTakbeer(volume, onEnded));
+        fallbackAudio.play().catch(() => playSynthesizedTakbeer(finalVolume, onEnded));
         activeAudioElement = fallbackAudio;
       } catch {
-        playSynthesizedTakbeer(volume, onEnded);
+        playSynthesizedTakbeer(finalVolume, onEnded);
       }
     };
 
     const playPromise = audio.play();
     if (playPromise !== undefined) {
       playPromise.catch((err) => {
-        console.warn('Autoplay caught, fallback to secondary or synthesized:', err);
+        console.warn('Autoplay handled, attempting secondary stream:', err);
         if (streamInfo.fallback && streamInfo.fallback !== streamInfo.primary) {
           const fallbackAudio = new Audio(streamInfo.fallback);
-          fallbackAudio.volume = Math.max(0, Math.min(1, volume));
+          fallbackAudio.volume = finalVolume;
           fallbackAudio.onended = () => {
             activeAudioElement = null;
             if (onEnded) onEnded();
           };
-          fallbackAudio.play().catch(() => playSynthesizedTakbeer(volume, onEnded));
+          fallbackAudio.play().catch(() => playSynthesizedTakbeer(finalVolume, onEnded));
           activeAudioElement = fallbackAudio;
         } else {
-          playSynthesizedTakbeer(volume, onEnded);
+          playSynthesizedTakbeer(finalVolume, onEnded);
         }
       });
     }
     activeAudioElement = audio;
   } catch (err) {
     console.warn('playAdhan error:', err);
-    playSynthesizedTakbeer(volume, onEnded);
+    playSynthesizedTakbeer(finalVolume, onEnded);
   }
 };
 
@@ -180,7 +242,7 @@ export function playSynthesizedTakbeer(volume: number = 0.8, onEnded?: () => voi
   try {
     const { ctx, master } = getAudioContext();
     const now = ctx.currentTime;
-    // Takbeer notes (Allahu Akbar): D4, F4, G4, A4, G4, F4, D4
+    // Takbeer notes: D4, F4, G4, A4, G4, F4, D4
     const notes = [293.66, 349.23, 392.00, 440.00, 392.00, 349.23, 293.66];
     const totalDuration = notes.length * 0.35 + 1.2;
 
@@ -218,12 +280,13 @@ export function playSynthesizedTakbeer(volume: number = 0.8, onEnded?: () => voi
 // ==========================================
 
 /**
- * Plays synthesized notification sound with onEnded callback support
+ * Plays synthesized notification sound with smart volume & anti-clip envelope
  */
 export const playNotificationSound = (
   soundId: NotificationSoundId = 'soft-bell', 
   volume: number = 0.8,
-  onEnded?: () => void
+  onEnded?: () => void,
+  options?: { quietHours?: boolean }
 ) => {
   stopActiveAudio();
   if (soundId === 'silent') {
@@ -234,7 +297,7 @@ export const playNotificationSound = (
   try {
     const { ctx, master } = getAudioContext();
     const now = ctx.currentTime;
-    const vol = Math.max(0, Math.min(1, volume));
+    const vol = calculateSmartVolume(volume, { quietHours: options?.quietHours ?? true, isAdhan: false });
     let approxDuration = 1.6;
 
     switch (soundId) {
@@ -487,10 +550,11 @@ export const playSuccessPing = () => {
 /**
  * Warning alert sound
  */
-export const playWarningAlert = () => {
+export const playWarningAlert = (volume: number = 0.8) => {
   try {
     const { ctx, master } = getAudioContext();
     const now = ctx.currentTime;
+    const vol = calculateSmartVolume(volume, { quietHours: true });
 
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
@@ -500,7 +564,7 @@ export const playWarningAlert = () => {
     osc.frequency.setValueAtTime(370, now + 0.15);
 
     gain.gain.setValueAtTime(0, now);
-    gain.gain.linearRampToValueAtTime(0.15, now + 0.05);
+    gain.gain.linearRampToValueAtTime(0.18 * vol, now + 0.05);
     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
 
     osc.connect(gain);
@@ -516,10 +580,11 @@ export const playWarningAlert = () => {
 /**
  * Urgent Countdown & Overdue Alarm Alert (3-tone rapid burst)
  */
-export const playUrgentAlert = () => {
+export const playUrgentAlert = (volume: number = 0.8) => {
   try {
     const { ctx, master } = getAudioContext();
     const now = ctx.currentTime;
+    const vol = calculateSmartVolume(volume, { quietHours: true });
 
     // Rapid urgent pulses (880Hz, 740Hz, 980Hz)
     const tones = [880, 740, 980];
@@ -531,7 +596,7 @@ export const playUrgentAlert = () => {
       osc.frequency.setValueAtTime(freq, now + idx * 0.12);
 
       gain.gain.setValueAtTime(0, now + idx * 0.12);
-      gain.gain.linearRampToValueAtTime(0.16, now + idx * 0.12 + 0.02);
+      gain.gain.linearRampToValueAtTime(0.18 * vol, now + idx * 0.12 + 0.02);
       gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.12 + 0.18);
 
       osc.connect(gain);

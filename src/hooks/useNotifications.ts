@@ -74,7 +74,11 @@ export function useNotifications({ prayers }: UseNotificationsProps) {
         const prePrayerKey = `${todayStr}_prayer_pre15_${prayer.name}`;
         if (diff === 15 && !notifiedEventsRef.current.has(prePrayerKey)) {
           notifiedEventsRef.current.add(prePrayerKey);
-          if (settings.soundEnabled) playNotificationSound(settings.notificationSound || 'soft-bell', settings.volume ?? 0.8);
+          if (settings.soundEnabled) {
+            playNotificationSound(settings.notificationSound || 'soft-bell', settings.volume ?? 0.8, undefined, {
+              quietHours: settings.quietHoursEnabled ?? true,
+            });
+          }
           haptic.notification();
           showToast(`⏳ اقتراب وقت الصلاة: باقي 15 دقيقة على أذان صلاة ${prayer.arabicName} 🕌`, 'info');
           triggerNotification(`🕌 اقتراب وقت صلاة ${prayer.arabicName}`, `باقي 15 دقيقة على موعد أذان ${prayer.arabicName}. استعد للوضوء والصلاة!`, '🕌');
@@ -85,7 +89,10 @@ export function useNotifications({ prayers }: UseNotificationsProps) {
         if (diff >= 0 && diff <= 1 && !notifiedEventsRef.current.has(adhanKey)) {
           notifiedEventsRef.current.add(adhanKey);
           if (settings.soundEnabled) {
-            playAdhan(settings.adhanSound || 'makkah', settings.volume ?? 0.8);
+            playAdhan(settings.adhanSound || 'makkah', settings.volume ?? 0.8, undefined, {
+              gentleFadeIn: settings.gentleFadeIn ?? true,
+              quietHours: settings.quietHoursEnabled ?? true,
+            });
           }
           haptic.prayer();
           showToast(`🕌 حان الآن موعد أذان صلاة ${prayer.arabicName}! أرحنا بها يا بلال ✨`, 'success');
