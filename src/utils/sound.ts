@@ -63,38 +63,38 @@ export const stopActiveAudio = () => {
 // 1. ADHAN AUDIO RECITATION ENGINE
 // ==========================================
 
-const ADHAN_STREAMS: Record<Exclude<AdhanSoundId, 'silent'>, { primary: string; fallback?: string }> = {
+const ADHAN_STREAMS: Record<Exclude<AdhanSoundId, 'silent'>, { primary: string; fallback: string }> = {
   'makkah': {
-    primary: 'https://cdn.aladhan.com/audio/adhans/c1.mp3',
-    fallback: 'https://cdn.islamic.network/adhans/makkah.mp3',
-  },
-  'madinah': {
-    primary: 'https://cdn.aladhan.com/audio/adhans/a3.mp3',
-    fallback: 'https://cdn.aladhan.com/audio/adhans/c2.mp3',
-  },
-  'alaqsa': {
-    primary: 'https://cdn.aladhan.com/audio/adhans/a1.mp3',
-    fallback: 'https://cdn.aladhan.com/audio/adhans/c1.mp3',
-  },
-  'egypt-refaat': {
-    primary: 'https://cdn.aladhan.com/audio/adhans/a4.mp3',
-    fallback: 'https://cdn.aladhan.com/audio/adhans/c1.mp3',
-  },
-  'abdulbasit': {
-    primary: 'https://cdn.aladhan.com/audio/adhans/a2.mp3',
+    primary: 'https://www.islamcan.com/audio/adhan/azan1.mp3',
     fallback: 'https://cdn.aladhan.com/audio/adhans/a1.mp3',
   },
+  'madinah': {
+    primary: 'https://www.islamcan.com/audio/adhan/azan2.mp3',
+    fallback: 'https://cdn.aladhan.com/audio/adhans/a3.mp3',
+  },
+  'alaqsa': {
+    primary: 'https://www.islamcan.com/audio/adhan/azan3.mp3',
+    fallback: 'https://cdn.aladhan.com/audio/adhans/a1.mp3',
+  },
+  'egypt-refaat': {
+    primary: 'https://www.islamcan.com/audio/adhan/azan4.mp3',
+    fallback: 'https://cdn.aladhan.com/audio/adhans/a4.mp3',
+  },
+  'abdulbasit': {
+    primary: 'https://www.islamcan.com/audio/adhan/azan5.mp3',
+    fallback: 'https://cdn.aladhan.com/audio/adhans/a2.mp3',
+  },
   'takbeer-short': {
-    primary: 'https://cdn.aladhan.com/audio/adhans/a3.mp3',
-    fallback: 'https://cdn.aladhan.com/audio/adhans/c1.mp3',
+    primary: 'https://www.islamcan.com/audio/adhan/azan20.mp3',
+    fallback: 'https://cdn.aladhan.com/audio/adhans/a3.mp3',
   },
   'nasr-tobbar': {
-    primary: 'https://cdn.aladhan.com/audio/adhans/a4.mp3',
-    fallback: 'https://cdn.aladhan.com/audio/adhans/c1.mp3',
+    primary: 'https://www.islamcan.com/audio/adhan/azan7.mp3',
+    fallback: 'https://cdn.aladhan.com/audio/adhans/a4.mp3',
   },
   'fajr-special': {
-    primary: 'https://cdn.aladhan.com/audio/adhans/fajr1.mp3',
-    fallback: 'https://cdn.aladhan.com/audio/adhans/c1.mp3',
+    primary: 'https://www.islamcan.com/audio/adhan/azan6.mp3',
+    fallback: 'https://www.islamcan.com/audio/adhan/azan1.mp3',
   },
 };
 
@@ -115,7 +115,9 @@ export const playAdhan = (
   const streamInfo = ADHAN_STREAMS[soundId] || ADHAN_STREAMS['makkah'];
 
   try {
-    const audio = new Audio(streamInfo.primary);
+    const audio = new Audio();
+    audio.src = streamInfo.primary;
+    audio.preload = 'auto';
     audio.volume = Math.max(0, Math.min(1, volume));
     
     audio.onended = () => {
@@ -124,32 +126,49 @@ export const playAdhan = (
     };
 
     audio.onerror = () => {
-      // Fallback stream or synthesizer
-      if (streamInfo.fallback) {
-        const fallbackAudio = new Audio(streamInfo.fallback);
+      console.warn('Primary stream failed, attempting secondary fallback for', soundId);
+      // Secondary fallback
+      try {
+        const fallbackAudio = new Audio();
+        fallbackAudio.src = streamInfo.fallback;
+        fallbackAudio.preload = 'auto';
         fallbackAudio.volume = Math.max(0, Math.min(1, volume));
         fallbackAudio.onended = () => {
           activeAudioElement = null;
           if (onEnded) onEnded();
         };
         fallbackAudio.onerror = () => {
+          console.warn('Fallback stream failed, using synthesized Takbeer');
           playSynthesizedTakbeer(volume, onEnded);
         };
         fallbackAudio.play().catch(() => playSynthesizedTakbeer(volume, onEnded));
         activeAudioElement = fallbackAudio;
-      } else {
+      } catch {
         playSynthesizedTakbeer(volume, onEnded);
       }
     };
 
     const playPromise = audio.play();
     if (playPromise !== undefined) {
-      playPromise.catch(() => {
-        playSynthesizedTakbeer(volume, onEnded);
+      playPromise.catch((err) => {
+        console.warn('Autoplay caught, fallback to secondary or synthesized:', err);
+        if (streamInfo.fallback && streamInfo.fallback !== streamInfo.primary) {
+          const fallbackAudio = new Audio(streamInfo.fallback);
+          fallbackAudio.volume = Math.max(0, Math.min(1, volume));
+          fallbackAudio.onended = () => {
+            activeAudioElement = null;
+            if (onEnded) onEnded();
+          };
+          fallbackAudio.play().catch(() => playSynthesizedTakbeer(volume, onEnded));
+          activeAudioElement = fallbackAudio;
+        } else {
+          playSynthesizedTakbeer(volume, onEnded);
+        }
       });
     }
     activeAudioElement = audio;
-  } catch {
+  } catch (err) {
+    console.warn('playAdhan error:', err);
     playSynthesizedTakbeer(volume, onEnded);
   }
 };
