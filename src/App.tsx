@@ -114,9 +114,9 @@ const DashboardContent: React.FC = () => {
 
         {/* Dynamic Content based on Active Tab */}
         {activeTab === 'today' && (
-          <div className="space-y-6">
+          <div className="space-y-5 sm:space-y-6">
             
-            {/* Prayer Header Countdown Card */}
+            {/* 1. Prayer Header Countdown Card (Full Width Balanced Grid) */}
             <PrayerHeaderCard
               nextPrayer={nextPrayer}
               remainingSeconds={remainingSeconds}
@@ -125,39 +125,39 @@ const DashboardContent: React.FC = () => {
               onRefreshLocation={refetch}
             />
 
-            {/* Daily Quote & Hadith Inspiration */}
-            <DailyQuote />
+            {/* 2. Full 6-Prayer Grid Ribbon (Balanced Across All 6 Cards) */}
+            <PrayerGrid prayers={prayers} />
 
-            {/* Qibla Compass + Prayer Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              <div className="lg:col-span-2">
-                <PrayerGrid prayers={prayers} />
+            {/* 3. Daily Inspiration + Qibla Compass Split (8 cols + 4 cols) */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+              <div className="lg:col-span-8 flex flex-col justify-center">
+                <DailyQuote />
               </div>
-              <div className="lg:col-span-1">
+              <div className="lg:col-span-4 flex flex-col justify-center">
                 <QiblaCard qiblaDirection={qiblaDirection} locationName={userLocationName || `${settings.selectedCity}، ${settings.selectedCountry}`} />
               </div>
             </div>
 
-            {/* Cumulative Daily Achievement Progress Bar */}
+            {/* 4. Cumulative Daily Achievement Progress Bar */}
             <ProgressBarCard
               todayLessons={todayLessons}
               todayTasks={todayTasks}
               prayers={prayers}
             />
 
-            {/* Gamified XP Rank Badge */}
+            {/* 5. Gamified XP Rank Badge */}
             <StudentRankBadge />
 
-            {/* Main Today Schedule & Tasks Split Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* 6. Main Today Schedule & Tasks Split Grid (7 cols + 5 cols) */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
               
-              {/* Today's Lessons (2 Columns) */}
-              <div className="lg:col-span-2">
+              {/* Today's Lessons (7 Columns on Large) */}
+              <div className="lg:col-span-7">
                 <TodaySchedule todayLessons={todayLessons} />
               </div>
 
-              {/* Tasks Quick Widget (1 Column) */}
-              <div className="lg:col-span-1">
+              {/* Tasks Quick Widget (5 Columns on Large) */}
+              <div className="lg:col-span-5">
                 <TaskManager />
               </div>
 
@@ -184,37 +184,25 @@ const DashboardContent: React.FC = () => {
 
       </main>
 
-      {/* Footer */}
-      <footer className="py-6 border-t border-slate-800/60 light:border-slate-200 text-center text-xs text-slate-500 light:text-slate-600 mb-14 lg:mb-0">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="flex items-center gap-1">
-            <span>{t('footerText')}</span>
-            <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500 inline" />
-          </p>
-
-          <p className="text-[11px] text-slate-600">
-            {t('footerPrivacy')}
-          </p>
-        </div>
-      </footer>
-
-      {/* Mobile Bottom Thumb Navigation */}
+      {/* Mobile Bottom Navigation */}
       <MobileBottomNav />
 
-      {/* Modals & Toasts */}
+      {/* Global Modals */}
       <OnboardingModal />
       <EditProfileModal />
-      <AppTourModal isOpen={isAppTourOpen} onClose={() => setIsAppTourOpen(false)} />
       <LessonFormModal />
       <TaskFormModal />
       <WeeklyStatsModal />
       <ScheduleShareCard />
       <AIStudyPlannerModal />
+      <BackupModal />
+      <ThemeSelectorModal />
       <AthkarModal />
       <AchievementsModal />
       <StudentStoryShareModal />
-      <BackupModal />
-      <ThemeSelectorModal />
+      <AppTourModal />
+
+      {/* Global Toast Notification System */}
       <ToastNotification />
 
     </div>

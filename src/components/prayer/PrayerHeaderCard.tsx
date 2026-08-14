@@ -10,9 +10,7 @@ import {
   VolumeX, 
   Sparkles, 
   BookOpen, 
-  Compass,
-  Radio,
-  Layers
+  Compass
 } from 'lucide-react';
 import { PrayerItem } from '../../types';
 import { formatSecondsToTimer, formatTime12h } from '../../utils/formatters';
@@ -144,21 +142,21 @@ export const PrayerHeaderCard: React.FC<PrayerHeaderCardProps> = ({
   }, [settings.selectedCity, settings.selectedCountry, userLocationName, isAr]);
 
   return (
-    <div className="relative">
+    <div className="relative w-full">
       
-      {/* Main Spiritual Card */}
+      {/* Main Spiritual Card with Balanced Responsive Grid */}
       <div 
-        className="w-full p-5 sm:p-7 md:p-8 rounded-3xl border glass-card shadow-2xl relative overflow-hidden bg-gradient-to-r from-indigo-950/60 via-slate-900/90 to-purple-950/50"
+        className="w-full p-4 sm:p-6 md:p-7 rounded-3xl border glass-card shadow-2xl relative overflow-hidden bg-gradient-to-r from-indigo-950/60 via-slate-900/90 to-purple-950/50"
         style={{ borderColor: 'var(--card-border)' }}
       >
         {/* Decorative Atmospheric Lights */}
         <div className="absolute top-0 right-1/4 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-1/4 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+        <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-5 md:gap-6 items-center">
 
-          {/* Right Section: Next Prayer Info & Location Picker */}
-          <div className="text-center md:text-start space-y-2.5 w-full md:w-auto flex-1">
+          {/* Right Section (7 cols): Next Prayer Title, Location, and Quick Controls */}
+          <div className="md:col-span-7 text-center md:text-start space-y-2.5">
             
             {/* Top Badge */}
             <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 text-xs font-bold shadow-inner">
@@ -170,24 +168,24 @@ export const PrayerHeaderCard: React.FC<PrayerHeaderCardProps> = ({
             </div>
 
             {/* Next Prayer Big Title */}
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight flex items-center justify-center md:justify-start gap-3 flex-wrap" style={{ color: 'var(--text-color)' }}>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black tracking-tight flex items-center justify-center md:justify-start gap-2.5 sm:gap-3 flex-wrap" style={{ color: 'var(--text-color)' }}>
               <span>{nextPrayer ? (isAr ? nextPrayer.arabicName : nextPrayer.name) : t('loading')}</span>
               {nextPrayer && (
-                <span className="text-xl sm:text-2xl font-bold text-amber-400 font-mono">
+                <span className="text-lg sm:text-2xl font-bold text-amber-400 font-mono">
                   ({formatTime12h(nextPrayer.time)})
                 </span>
               )}
             </h2>
 
             {/* Location Selector Pill Button */}
-            <div className="flex items-center justify-center md:justify-start gap-2 flex-wrap pt-1">
+            <div className="flex items-center justify-center md:justify-start gap-2 flex-wrap pt-0.5">
               <button
                 ref={btnRef}
                 onClick={() => setIsCityMenuOpen(!isCityMenuOpen)}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-700/80 text-xs font-bold text-slate-200 transition-all active:scale-95 shadow-sm cursor-pointer"
               >
                 <MapPin className="w-3.5 h-3.5 text-rose-400" />
-                <span className="truncate max-w-[200px]">{displayLocationName}</span>
+                <span className="truncate max-w-[180px] sm:max-w-[240px]">{displayLocationName}</span>
                 <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${isCityMenuOpen ? 'rotate-180' : ''}`} />
               </button>
 
@@ -205,7 +203,7 @@ export const PrayerHeaderCard: React.FC<PrayerHeaderCardProps> = ({
             </div>
 
             {/* Quick Action Badges */}
-            <div className="flex items-center justify-center md:justify-start gap-2 pt-2">
+            <div className="flex items-center justify-center md:justify-start gap-2 pt-1.5 flex-wrap">
               
               {/* Adhan Preview */}
               <button
@@ -217,7 +215,7 @@ export const PrayerHeaderCard: React.FC<PrayerHeaderCardProps> = ({
                 }`}
               >
                 {isPlayingAdhanPreview ? <VolumeX className="w-3.5 h-3.5 text-rose-400" /> : <Volume2 className="w-3.5 h-3.5 text-indigo-400" />}
-                <span>{isPlayingAdhanPreview ? (isAr ? 'إيقاف الأذان' : 'Stop') : (isAr ? 'استماع للأذان 🕌' : 'Listen Adhan')}</span>
+                <span>{isPlayingAdhanPreview ? (isAr ? 'إيقاف الأذان' : 'Stop') : (isAr ? 'استماع للأذان' : 'Listen Adhan')}</span>
               </button>
 
               {/* Athkar Shortcut */}
@@ -228,7 +226,7 @@ export const PrayerHeaderCard: React.FC<PrayerHeaderCardProps> = ({
                 }}
                 className="px-3 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 text-xs font-bold flex items-center gap-1.5 transition-all active:scale-95"
               >
-                <span>📿</span>
+                <BookOpen className="w-3.5 h-3.5 text-emerald-400" />
                 <span>{isAr ? 'أذكار الصلاة' : 'Athkar'}</span>
               </button>
 
@@ -236,45 +234,45 @@ export const PrayerHeaderCard: React.FC<PrayerHeaderCardProps> = ({
 
           </div>
 
-          {/* Left Section: Radiant Digital Countdown Tiles */}
-          <div className="flex items-center justify-center gap-2 sm:gap-3 shrink-0">
+          {/* Left Section (5 cols): Radiant Digital Countdown Tiles */}
+          <div className="md:col-span-5 flex items-center justify-center md:justify-end gap-2 sm:gap-3 shrink-0 pt-2 md:pt-0">
             
             {/* Hours */}
             <div className="flex flex-col items-center">
-              <div className="w-16 sm:w-20 md:w-22 h-20 sm:h-24 md:h-26 rounded-2xl bg-gradient-to-b from-slate-900/90 to-indigo-950/80 border border-indigo-500/30 shadow-2xl flex items-center justify-center relative overflow-hidden backdrop-blur-md group hover:border-indigo-500/60 transition-colors">
-                <span className="font-mono text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight">
+              <div className="w-14 sm:w-16 md:w-18 lg:w-20 h-16 sm:h-20 md:h-22 rounded-2xl bg-gradient-to-b from-slate-900/90 to-indigo-950/80 border border-indigo-500/30 shadow-2xl flex items-center justify-center relative overflow-hidden backdrop-blur-md group hover:border-indigo-500/60 transition-colors">
+                <span className="font-mono text-2xl sm:text-3xl md:text-4xl font-black text-white tracking-tight">
                   {hours}
                 </span>
               </div>
-              <span className="text-[11px] font-bold text-indigo-300/80 mt-1.5 uppercase tracking-wider">
+              <span className="text-[10px] sm:text-[11px] font-bold text-indigo-300/80 mt-1.5 uppercase tracking-wider">
                 {isAr ? 'ساعة' : 'Hours'}
               </span>
             </div>
 
-            <span className="text-2xl sm:text-3xl font-black text-indigo-400/80 mb-5 animate-pulse">:</span>
+            <span className="text-xl sm:text-2xl font-black text-indigo-400/80 mb-4 animate-pulse">:</span>
 
             {/* Minutes */}
             <div className="flex flex-col items-center">
-              <div className="w-16 sm:w-20 md:w-22 h-20 sm:h-24 md:h-26 rounded-2xl bg-gradient-to-b from-slate-900/90 to-indigo-950/80 border border-indigo-500/30 shadow-2xl flex items-center justify-center relative overflow-hidden backdrop-blur-md group hover:border-indigo-500/60 transition-colors">
-                <span className="font-mono text-3xl sm:text-4xl md:text-5xl font-black text-amber-400 tracking-tight">
+              <div className="w-14 sm:w-16 md:w-18 lg:w-20 h-16 sm:h-20 md:h-22 rounded-2xl bg-gradient-to-b from-slate-900/90 to-indigo-950/80 border border-indigo-500/30 shadow-2xl flex items-center justify-center relative overflow-hidden backdrop-blur-md group hover:border-indigo-500/60 transition-colors">
+                <span className="font-mono text-2xl sm:text-3xl md:text-4xl font-black text-amber-400 tracking-tight">
                   {minutes}
                 </span>
               </div>
-              <span className="text-[11px] font-bold text-amber-300/80 mt-1.5 uppercase tracking-wider">
+              <span className="text-[10px] sm:text-[11px] font-bold text-amber-300/80 mt-1.5 uppercase tracking-wider">
                 {isAr ? 'دقيقة' : 'Minutes'}
               </span>
             </div>
 
-            <span className="text-2xl sm:text-3xl font-black text-indigo-400/80 mb-5 animate-pulse">:</span>
+            <span className="text-xl sm:text-2xl font-black text-indigo-400/80 mb-4 animate-pulse">:</span>
 
             {/* Seconds */}
             <div className="flex flex-col items-center">
-              <div className="w-16 sm:w-20 md:w-22 h-20 sm:h-24 md:h-26 rounded-2xl bg-gradient-to-b from-slate-900/90 to-indigo-950/80 border border-indigo-500/30 shadow-2xl flex items-center justify-center relative overflow-hidden backdrop-blur-md group hover:border-indigo-500/60 transition-colors">
-                <span className="font-mono text-3xl sm:text-4xl md:text-5xl font-black text-emerald-400 tracking-tight">
+              <div className="w-14 sm:w-16 md:w-18 lg:w-20 h-16 sm:h-20 md:h-22 rounded-2xl bg-gradient-to-b from-slate-900/90 to-indigo-950/80 border border-indigo-500/30 shadow-2xl flex items-center justify-center relative overflow-hidden backdrop-blur-md group hover:border-indigo-500/60 transition-colors">
+                <span className="font-mono text-2xl sm:text-3xl md:text-4xl font-black text-emerald-400 tracking-tight">
                   {seconds}
                 </span>
               </div>
-              <span className="text-[11px] font-bold text-emerald-300/80 mt-1.5 uppercase tracking-wider">
+              <span className="text-[10px] sm:text-[11px] font-bold text-emerald-300/80 mt-1.5 uppercase tracking-wider">
                 {isAr ? 'ثانية' : 'Seconds'}
               </span>
             </div>

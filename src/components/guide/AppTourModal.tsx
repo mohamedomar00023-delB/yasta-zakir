@@ -226,14 +226,17 @@ const TOUR_STEPS: TourStep[] = [
 ];
 
 interface AppTourModalProps {
-  isOpen: boolean;
-  onClose: () => void;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
-export const AppTourModal: React.FC<AppTourModalProps> = ({ isOpen, onClose }) => {
-  const { settings } = useApp();
+export const AppTourModal: React.FC<AppTourModalProps> = ({ isOpen: propIsOpen, onClose: propOnClose }) => {
+  const { settings, isAppTourOpen, setIsAppTourOpen } = useApp();
   const isAr = settings.language !== 'en';
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
+
+  const isOpen = propIsOpen !== undefined ? propIsOpen : isAppTourOpen;
+  const onClose = propOnClose || (() => setIsAppTourOpen(false));
 
   if (!isOpen) return null;
 

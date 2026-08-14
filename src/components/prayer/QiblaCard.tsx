@@ -1,5 +1,5 @@
 import React from 'react';
-import { Compass } from 'lucide-react';
+import { Compass, Navigation, MapPin } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
 interface QiblaCardProps {
@@ -14,44 +14,49 @@ export const QiblaCard: React.FC<QiblaCardProps> = ({ qiblaDirection, locationNa
   if (qiblaDirection === null) return null;
 
   return (
-    <div className="glass-card border rounded-3xl p-5 flex items-center gap-5 bg-gradient-to-br from-amber-500/10 via-transparent to-emerald-500/10 h-full">
-      {/* Compass Arrow */}
-      <div className="relative flex-shrink-0 w-20 h-20">
-        {/* Compass background ring */}
-        <div className="absolute inset-0 rounded-full border-2 border-amber-500/30 bg-amber-500/5 flex items-center justify-center">
-          <Compass className="w-8 h-8 text-amber-400/60" />
+    <div className="glass-card border rounded-3xl p-4 sm:p-5 flex items-center justify-between gap-4 bg-gradient-to-br from-indigo-950/40 via-purple-950/30 to-slate-900/80 shadow-xl relative overflow-hidden h-full">
+      {/* Decorative background glow */}
+      <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl pointer-events-none" />
+
+      {/* Compass Dial */}
+      <div className="relative shrink-0 w-16 h-16 sm:w-18 sm:h-18 flex items-center justify-center">
+        {/* Outer Ring */}
+        <div className="absolute inset-0 rounded-full border-2 border-amber-500/40 bg-slate-950/80 flex items-center justify-center shadow-inner">
+          <Compass className="w-6 h-6 sm:w-7 sm:h-7 text-slate-600" />
         </div>
-        {/* Qibla direction arrow */}
+        
+        {/* Dynamic Arrow pointing to Qibla */}
         <div
-          className="absolute inset-0 flex items-center justify-center"
+          className="absolute inset-0 flex items-center justify-center transition-transform duration-700 ease-out"
           style={{ transform: `rotate(${qiblaDirection}deg)` }}
         >
-          <div className="w-1 h-8 rounded-full bg-gradient-to-t from-amber-500 to-emerald-400 shadow-lg" style={{ transformOrigin: 'bottom center', marginTop: '-8px' }} />
+          <div className="w-1.5 h-7 rounded-full bg-gradient-to-t from-amber-400 to-emerald-400 shadow-md shadow-amber-400/50" style={{ transformOrigin: 'bottom center', marginTop: '-12px' }} />
         </div>
-        {/* Kaaba emoji at tip */}
-        <div
-          className="absolute inset-0 flex items-start justify-center pt-1"
-          style={{ transform: `rotate(${qiblaDirection}deg)` }}
-        >
-          <span className="text-xs" style={{ transform: `rotate(-${qiblaDirection}deg)` }}>🕋</span>
-        </div>
+
+        {/* Center Pivot Point */}
+        <div className="w-2.5 h-2.5 rounded-full bg-amber-400 border border-slate-900 z-10 shadow-sm" />
       </div>
 
-      {/* Text info */}
-      <div className="flex-1 min-w-0">
-        <p className="text-[11px] font-bold text-amber-400/80 mb-1">
-          {isAr ? 'اتجاه القبلة نحو مكة المكرمة' : 'Qibla Direction to Mecca'}
+      {/* Text Details */}
+      <div className="flex-1 min-w-0 space-y-0.5 text-start">
+        <div className="flex items-center gap-1.5 text-amber-400 font-bold text-xs">
+          <Navigation className="w-3.5 h-3.5 text-amber-400" />
+          <span>{isAr ? 'اتجاه القبلة الشريفة' : 'Qibla Direction'}</span>
+        </div>
+
+        <p className="text-xl sm:text-2xl font-black text-white font-mono leading-none pt-0.5">
+          {Math.round(qiblaDirection)}° <span className="text-xs font-sans text-slate-400 font-normal">{isAr ? 'درجة' : 'deg'}</span>
         </p>
-        <p className="text-2xl font-black text-slate-100 leading-tight">
-          {qiblaDirection}°
-        </p>
-        <p className="text-[11px] text-slate-400 mt-0.5 truncate">
-          {isAr ? `من ${locationName}` : `From ${locationName}`}
+
+        <p className="text-[11px] text-slate-400 truncate flex items-center gap-1">
+          <MapPin className="w-3 h-3 text-rose-400 shrink-0" />
+          <span className="truncate">{locationName}</span>
         </p>
       </div>
 
-      {/* Kaaba Icon large */}
-      <div className="text-4xl select-none hidden sm:block">🕋</div>
+      <div className="text-2xl sm:text-3xl shrink-0 select-none opacity-80">
+        🕋
+      </div>
     </div>
   );
 };
