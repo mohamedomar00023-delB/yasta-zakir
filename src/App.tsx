@@ -4,6 +4,7 @@ import { useAladhan } from './hooks/useAladhan';
 import { useNotifications } from './hooks/useNotifications';
 
 import { Navbar } from './components/Navbar';
+import { Analytics } from '@vercel/analytics/react';
 import { PrayerHeaderCard } from './components/prayer/PrayerHeaderCard';
 import { PrayerGrid } from './components/prayer/PrayerGrid';
 import { QiblaCard } from './components/prayer/QiblaCard';
@@ -213,6 +214,7 @@ export function App() {
   return (
     <AppProvider>
       <DashboardContent />
+      <Analytics />
     </AppProvider>
   );
 }
