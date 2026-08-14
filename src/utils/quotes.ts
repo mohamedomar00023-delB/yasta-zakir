@@ -1,5 +1,11 @@
+export interface QuoteItem {
+  text: string;
+  source: string;
+  type: string;
+}
+
 // 30 اقتباس يومي تحفيزي للطالب المصري - آيات وأحاديث وحكم
-export const DAILY_QUOTES = [
+export const DAILY_QUOTES: QuoteItem[] = [
   { text: '﴿وَمَن يَتَّقِ اللَّهَ يَجْعَل لَّهُ مَخْرَجًا وَيَرْزُقْهُ مِنْ حَيْثُ لَا يَحْتَسِبُ﴾', source: 'سورة الطلاق: 2-3', type: 'quran' },
   { text: '"العلم سلاحك، والصبر درعك، واليوم فرصتك."', source: 'حكمة', type: 'wisdom' },
   { text: '﴿فَإِنَّ مَعَ الْعُسْرِ يُسْرًا، إِنَّ مَعَ الْعُسْرِ يُسْرًا﴾', source: 'سورة الشرح: 5-6', type: 'quran' },
@@ -32,9 +38,14 @@ export const DAILY_QUOTES = [
   { text: '"اللهم إني أسألك علماً نافعاً، ورزقاً طيباً، وعملاً متقبلاً."', source: 'دعاء النبي ﷺ', type: 'hadith' },
 ];
 
-export const getDailyQuote = () => {
+export const getDailyQuote = (): QuoteItem => {
   const dayOfYear = Math.floor(
     (new Date().getTime() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000
   );
   return DAILY_QUOTES[dayOfYear % DAILY_QUOTES.length];
+};
+
+export const getRandomQuote = (): QuoteItem => {
+  const randomIndex = Math.floor(Math.random() * DAILY_QUOTES.length);
+  return DAILY_QUOTES[randomIndex];
 };

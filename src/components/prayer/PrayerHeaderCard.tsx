@@ -1,9 +1,25 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { Clock, MapPin, RefreshCw, ChevronDown, Check, Search, Settings2, Plus, Layers } from 'lucide-react';
+import { 
+  Clock, 
+  MapPin, 
+  RefreshCw, 
+  ChevronDown, 
+  Check, 
+  Search, 
+  Volume2, 
+  VolumeX, 
+  Sparkles, 
+  BookOpen, 
+  Compass,
+  Radio,
+  Layers
+} from 'lucide-react';
 import { PrayerItem } from '../../types';
 import { formatSecondsToTimer, formatTime12h } from '../../utils/formatters';
 import { CALCULATION_METHODS, PRESET_CITIES, PresetCityItem } from '../../utils/presets';
 import { useApp } from '../../context/AppContext';
+import { playAdhan, stopActiveAudio } from '../../utils/sound';
+import { haptic } from '../../utils/haptics';
 
 interface PrayerHeaderCardProps {
   nextPrayer: PrayerItem | null;
@@ -30,35 +46,20 @@ export const PrayerHeaderCard: React.FC<PrayerHeaderCardProps> = ({
   loading,
   onRefreshLocation,
 }) => {
-  const { settings, updateSettings, showToast, t } = useApp();
+  const { settings, updateSettings, setIsAthkarModalOpen, showToast, t } = useApp();
   const isAr = settings.language !== 'en';
 
   const [isCityMenuOpen, setIsCityMenuOpen] = useState(false);
   const [searchCityQuery, setSearchCityQuery] = useState('');
   const [customCityInput, setCustomCityInput] = useState('');
-  const [showMethodSelector, setShowMethodSelector] = useState(false);
+  const [isPlayingAdhanPreview, setIsPlayingAdhanPreview] = useState(false);
+
   const btnRef = useRef<HTMLButtonElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const [dropdownPos, setDropdownPos] = useState({ top: 0, right: 0, left: 0 });
 
   const { hours, minutes, seconds } = formatSecondsToTimer(remainingSeconds);
 
-  // Calculate dropdown position relative to viewport
-  const openDropdown = () => {
-    if (btnRef.current) {
-      const rect = btnRef.current.getBoundingClientRect();
-      const isMobile = window.innerWidth < 640;
-      setDropdownPos({
-        top: isMobile ? rect.bottom + 6 : rect.bottom + window.scrollY + 6,
-        right: isMobile ? 12 : window.innerWidth - rect.right,
-        left: isMobile ? 12 : rect.left,
-      });
-    }
-    setIsCityMenuOpen(true);
-    setSearchCityQuery('');
-  };
-
-  // Close on outside click
+  // Close dropdown on outside click
   useEffect(() => {
     if (!isCityMenuOpen) return;
     const handleClick = (e: MouseEvent) => {
@@ -87,6 +88,7 @@ export const PrayerHeaderCard: React.FC<PrayerHeaderCardProps> = ({
   const groupedCities = useMemo(() => groupByCountry(filteredCities, isAr), [filteredCities, isAr]);
 
   const handleCitySelect = (cityObj: PresetCityItem) => {
+    haptic.selection();
     updateSettings({
       selectedCity: cityObj.city,
       selectedCountry: cityObj.country,
@@ -101,6 +103,7 @@ export const PrayerHeaderCard: React.FC<PrayerHeaderCardProps> = ({
   const handleCustomCitySubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!customCityInput.trim()) return;
+    haptic.selection();
     updateSettings({ selectedCity: customCityInput.trim(), selectedCountry: '', useGeolocation: false });
     setIsCityMenuOpen(false);
     setCustomCityInput('');
@@ -108,18 +111,26 @@ export const PrayerHeaderCard: React.FC<PrayerHeaderCardProps> = ({
   };
 
   const handleUseGeolocation = () => {
+    haptic.selection();
     updateSettings({ useGeolocation: true });
     setIsCityMenuOpen(false);
     onRefreshLocation();
-    showToast(isAr ? 'جاري تحديد موقعك تلقائياً 🛰️' : 'Detecting your location via GPS 🛰️', 'info');
+    showToast(isAr ? 'جاري تحديد موقعك تلقائياً عبر GPS 🛰️' : 'Detecting GPS location 🛰️', 'info');
   };
 
-  const currentMethodName = CALCULATION_METHODS.find(m => m.id === settings.calculationMethod)?.nameAr || '';
-
-  const getPrayerDisplayName = (p: PrayerItem | null) => {
-    if (!p) return t('loading');
-    if (!isAr) return p.name;
-    return p.arabicName;
+  const handleToggleAdhanPreview = () => {
+    haptic.medium();
+    if (isPlayingAdhanPreview) {
+      stopActiveAudio();
+      setIsPlayingAdhanPreview(false);
+      showToast(isAr ? 'تم إيقاف صوت الأذان' : 'Adhan audio stopped', 'info');
+    } else {
+      setIsPlayingAdhanPreview(true);
+      playAdhan(settings.adhanSound || 'makkah', settings.volume ?? 0.8, () => {
+        setIsPlayingAdhanPreview(false);
+      });
+      showToast(isAr ? 'جاري تشغيل صوت الأذان المختار 🕌' : 'Playing selected Adhan preview 🕌', 'success');
+    }
   };
 
   const displayLocationName = useMemo(() => {
@@ -133,247 +144,228 @@ export const PrayerHeaderCard: React.FC<PrayerHeaderCardProps> = ({
   }, [settings.selectedCity, settings.selectedCountry, userLocationName, isAr]);
 
   return (
-    <>
-      <div
-        className="w-full glass-panel p-4 sm:p-6 md:p-8 rounded-3xl border shadow-2xl relative"
-        style={{ background: 'var(--panel-bg)', borderColor: 'var(--panel-border)' }}
+    <div className="relative">
+      
+      {/* Main Spiritual Card */}
+      <div 
+        className="w-full p-5 sm:p-7 md:p-8 rounded-3xl border glass-card shadow-2xl relative overflow-hidden bg-gradient-to-r from-indigo-950/60 via-slate-900/90 to-purple-950/50"
+        style={{ borderColor: 'var(--card-border)' }}
       >
-        {/* Ambient blobs */}
-        <div className="absolute top-0 right-1/4 w-72 h-72 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-1/4 w-72 h-72 bg-emerald-600/8 rounded-full blur-3xl pointer-events-none" />
+        {/* Decorative Atmospheric Lights */}
+        <div className="absolute top-0 right-1/4 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-1/4 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-5 sm:gap-6">
+        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
 
-          {/* Right/Left: Prayer name + location button */}
-          <div className="text-center md:text-start space-y-2 sm:space-y-3 w-full md:w-auto flex-1">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/15 border border-indigo-500/25 text-indigo-400 text-xs font-bold">
-              <Clock className="w-3.5 h-3.5 animate-pulse" />
+          {/* Right Section: Next Prayer Info & Location Picker */}
+          <div className="text-center md:text-start space-y-2.5 w-full md:w-auto flex-1">
+            
+            {/* Top Badge */}
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 text-xs font-bold shadow-inner">
+              <Clock className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
               <span>{t('nextPrayerTitle')}</span>
+              <span className="text-amber-400 font-mono font-black">
+                {nextPrayer ? formatTime12h(nextPrayer.time) : '--:--'}
+              </span>
             </div>
 
-            <h2
-              className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight flex items-center justify-center md:justify-start gap-2 sm:gap-3 flex-wrap"
-              style={{ color: 'var(--text-color)' }}
-            >
-              <span>{getPrayerDisplayName(nextPrayer)}</span>
+            {/* Next Prayer Big Title */}
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight flex items-center justify-center md:justify-start gap-3 flex-wrap" style={{ color: 'var(--text-color)' }}>
+              <span>{nextPrayer ? (isAr ? nextPrayer.arabicName : nextPrayer.name) : t('loading')}</span>
               {nextPrayer && (
-                <span className="text-lg sm:text-xl md:text-2xl font-bold text-indigo-400">
-                  ({formatTime12h(nextPrayer.time, !isAr)})
+                <span className="text-xl sm:text-2xl font-bold text-amber-400 font-mono">
+                  ({formatTime12h(nextPrayer.time)})
                 </span>
               )}
             </h2>
 
-            {/* Location Selector Button */}
-            <div className="flex justify-center md:justify-start">
+            {/* Location Selector Pill Button */}
+            <div className="flex items-center justify-center md:justify-start gap-2 flex-wrap pt-1">
               <button
                 ref={btnRef}
-                onClick={openDropdown}
-                className="flex items-center gap-2 text-xs font-bold px-3 py-2 sm:px-3.5 sm:py-2 rounded-xl border transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] max-w-full"
-                style={{
-                  background: 'var(--card-bg)',
-                  borderColor: 'var(--card-border)',
-                  color: 'var(--text-color)',
-                }}
+                onClick={() => setIsCityMenuOpen(!isCityMenuOpen)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-700/80 text-xs font-bold text-slate-200 transition-all active:scale-95 shadow-sm cursor-pointer"
               >
-                <MapPin className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
-                <span className="max-w-[180px] sm:max-w-[240px] truncate">
-                  {displayLocationName}
-                </span>
-                <ChevronDown className={`w-3.5 h-3.5 flex-shrink-0 transition-transform text-slate-400 ${isCityMenuOpen ? 'rotate-180' : ''}`} />
+                <MapPin className="w-3.5 h-3.5 text-rose-400" />
+                <span className="truncate max-w-[200px]">{displayLocationName}</span>
+                <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${isCityMenuOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              <button
+                onClick={() => {
+                  haptic.selection();
+                  onRefreshLocation();
+                }}
+                disabled={loading}
+                className="p-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-700/80 text-slate-400 hover:text-slate-200 transition-all active:scale-95 cursor-pointer disabled:opacity-50"
+                title={isAr ? 'تحديث الموقع ومواقيت الصلاة' : 'Refresh Prayer Times'}
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-indigo-400' : ''}`} />
               </button>
             </div>
+
+            {/* Quick Action Badges */}
+            <div className="flex items-center justify-center md:justify-start gap-2 pt-2">
+              
+              {/* Adhan Preview */}
+              <button
+                onClick={handleToggleAdhanPreview}
+                className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-all active:scale-95 ${
+                  isPlayingAdhanPreview
+                    ? 'bg-rose-500/20 border-rose-500/40 text-rose-300 shadow-md shadow-rose-500/20'
+                    : 'bg-slate-900/60 border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800/80'
+                }`}
+              >
+                {isPlayingAdhanPreview ? <VolumeX className="w-3.5 h-3.5 text-rose-400" /> : <Volume2 className="w-3.5 h-3.5 text-indigo-400" />}
+                <span>{isPlayingAdhanPreview ? (isAr ? 'إيقاف الأذان' : 'Stop') : (isAr ? 'استماع للأذان 🕌' : 'Listen Adhan')}</span>
+              </button>
+
+              {/* Athkar Shortcut */}
+              <button
+                onClick={() => {
+                  haptic.selection();
+                  setIsAthkarModalOpen(true);
+                }}
+                className="px-3 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 text-xs font-bold flex items-center gap-1.5 transition-all active:scale-95"
+              >
+                <span>📿</span>
+                <span>{isAr ? 'أذكار الصلاة' : 'Athkar'}</span>
+              </button>
+
+            </div>
+
           </div>
 
-          {/* Countdown timer */}
-          <div className="flex items-end justify-center gap-1 sm:gap-2 dir-ltr shrink-0">
-            {[
-              { val: hours, label: isAr ? 'ساعة' : 'Hours' },
-              { val: minutes, label: isAr ? 'دقيقة' : 'Mins' },
-              { val: seconds, label: isAr ? 'ثانية' : 'Secs' },
-            ].map((item, idx) => (
-              <React.Fragment key={item.label}>
-                <div className="flex flex-col items-center">
-                  <div
-                    className="timer-digit-box w-12 min-[400px]:w-14 sm:w-16 md:w-20 h-12 min-[400px]:h-14 sm:h-16 md:h-20 rounded-xl sm:rounded-2xl flex items-center justify-center text-lg min-[400px]:text-xl sm:text-2xl md:text-3xl font-black shadow-inner border transition-all"
-                    style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)' }}
-                  >
-                    <span className="text-indigo-400">{item.val}</span>
-                  </div>
-                  <span className="text-[9px] min-[400px]:text-[10px] sm:text-[11px] font-bold mt-1" style={{ color: 'var(--subtext-color)' }}>
-                    {item.label}
-                  </span>
-                </div>
-                {idx < 2 && (
-                  <span className="text-lg sm:text-2xl font-black text-indigo-400 animate-pulse mb-3 min-[400px]:mb-4 sm:mb-5">:</span>
-                )}
-              </React.Fragment>
-            ))}
+          {/* Left Section: Radiant Digital Countdown Tiles */}
+          <div className="flex items-center justify-center gap-2 sm:gap-3 shrink-0">
+            
+            {/* Hours */}
+            <div className="flex flex-col items-center">
+              <div className="w-16 sm:w-20 md:w-22 h-20 sm:h-24 md:h-26 rounded-2xl bg-gradient-to-b from-slate-900/90 to-indigo-950/80 border border-indigo-500/30 shadow-2xl flex items-center justify-center relative overflow-hidden backdrop-blur-md group hover:border-indigo-500/60 transition-colors">
+                <span className="font-mono text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight">
+                  {hours}
+                </span>
+              </div>
+              <span className="text-[11px] font-bold text-indigo-300/80 mt-1.5 uppercase tracking-wider">
+                {isAr ? 'ساعة' : 'Hours'}
+              </span>
+            </div>
+
+            <span className="text-2xl sm:text-3xl font-black text-indigo-400/80 mb-5 animate-pulse">:</span>
+
+            {/* Minutes */}
+            <div className="flex flex-col items-center">
+              <div className="w-16 sm:w-20 md:w-22 h-20 sm:h-24 md:h-26 rounded-2xl bg-gradient-to-b from-slate-900/90 to-indigo-950/80 border border-indigo-500/30 shadow-2xl flex items-center justify-center relative overflow-hidden backdrop-blur-md group hover:border-indigo-500/60 transition-colors">
+                <span className="font-mono text-3xl sm:text-4xl md:text-5xl font-black text-amber-400 tracking-tight">
+                  {minutes}
+                </span>
+              </div>
+              <span className="text-[11px] font-bold text-amber-300/80 mt-1.5 uppercase tracking-wider">
+                {isAr ? 'دقيقة' : 'Minutes'}
+              </span>
+            </div>
+
+            <span className="text-2xl sm:text-3xl font-black text-indigo-400/80 mb-5 animate-pulse">:</span>
+
+            {/* Seconds */}
+            <div className="flex flex-col items-center">
+              <div className="w-16 sm:w-20 md:w-22 h-20 sm:h-24 md:h-26 rounded-2xl bg-gradient-to-b from-slate-900/90 to-indigo-950/80 border border-indigo-500/30 shadow-2xl flex items-center justify-center relative overflow-hidden backdrop-blur-md group hover:border-indigo-500/60 transition-colors">
+                <span className="font-mono text-3xl sm:text-4xl md:text-5xl font-black text-emerald-400 tracking-tight">
+                  {seconds}
+                </span>
+              </div>
+              <span className="text-[11px] font-bold text-emerald-300/80 mt-1.5 uppercase tracking-wider">
+                {isAr ? 'ثانية' : 'Seconds'}
+              </span>
+            </div>
+
           </div>
+
         </div>
       </div>
 
-      {/* Dropdown menu */}
+      {/* City & Country Selector Modal / Dropdown */}
       {isCityMenuOpen && (
-        <div
+        <div 
           ref={dropdownRef}
-          className="fixed z-[9999] w-[calc(100vw-24px)] sm:w-80 max-w-sm rounded-2xl border shadow-2xl overflow-hidden"
-          style={{
-            top: dropdownPos.top,
-            ...(window.innerWidth < 640 ? { left: '12px' } : (isAr ? { right: dropdownPos.right } : { left: dropdownPos.left })),
-            background: 'var(--panel-bg)',
-            borderColor: 'var(--panel-border)',
-            backdropFilter: 'blur(20px)',
-          }}
+          className="absolute z-50 top-full mt-2 left-0 right-0 max-w-md mx-auto sm:mx-0 p-4 rounded-3xl bg-slate-900/95 border border-slate-700/80 shadow-2xl backdrop-blur-xl text-start space-y-3"
         >
-          <div className="p-3 space-y-2">
-            {/* Search bar */}
-            <div className="relative">
-              <input
-                type="text"
-                value={searchCityQuery}
-                onChange={e => setSearchCityQuery(e.target.value)}
-                placeholder={isAr ? 'ابحث: القاهرة، المنصورة، الرياض...' : 'Search: Cairo, Riyadh, Dubai...'}
-                autoFocus
-                className="w-full px-3 py-2 pr-8 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                style={{
-                  background: 'var(--input-bg)',
-                  color: 'var(--text-color)',
-                  border: '1px solid var(--card-border)',
-                }}
-              />
-              <Search className="w-3.5 h-3.5 absolute right-2.5 top-2.5" style={{ color: 'var(--subtext-color)' }} />
-            </div>
-
-            {/* GPS Button */}
+          <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+            <span className="text-xs font-black text-white flex items-center gap-1.5">
+              <MapPin className="w-3.5 h-3.5 text-indigo-400" />
+              <span>{isAr ? 'اختر مدينتك أو دولتك:' : 'Select your city:'}</span>
+            </span>
             <button
               onClick={handleUseGeolocation}
-              className="w-full flex items-center justify-between gap-2 p-2.5 rounded-xl text-xs font-bold transition-all"
-              style={{
-                background: settings.useGeolocation ? 'rgba(16,185,129,0.2)' : 'var(--card-bg)',
-                color: '#10b981',
-                border: `1px solid ${settings.useGeolocation ? 'rgba(16,185,129,0.4)' : 'var(--card-border)'}`,
-              }}
+              className="text-[11px] text-indigo-400 hover:text-indigo-300 font-bold flex items-center gap-1"
             >
-              <span className="flex items-center gap-2">
-                <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-                {isAr ? 'تحديد موقعي تلقائياً 🛰️ (GPS)' : 'Auto-detect location (GPS)'}
-              </span>
-              {settings.useGeolocation && <Check className="w-4 h-4" />}
+              <Compass className="w-3 h-3" />
+              <span>{isAr ? 'تحديد تلقائي (GPS)' : 'Auto GPS'}</span>
             </button>
-
-            <div className="h-px" style={{ background: 'var(--card-border)' }} />
           </div>
 
-          {/* Cities grouped by country */}
-          <div className="max-h-60 overflow-y-auto px-3 pb-2 space-y-3">
-            {groupedCities.length === 0 ? (
-              <p className="text-center text-xs py-4" style={{ color: 'var(--subtext-color)' }}>
-                {isAr ? '😕 مفيش نتائج، جرب كلمة تانية أو أدخل المدينة يدوياً.' : 'No results found. Type your city below.'}
-              </p>
-            ) : (
-              groupedCities.map(group => (
-                <div key={group.countryLabel}>
-                  {/* Country header */}
-                  <div
-                    className="flex items-center gap-2 py-1.5 sticky top-0"
-                    style={{ background: 'var(--panel-bg)' }}
-                  >
-                    <span className="text-base">{group.flag}</span>
-                    <span className="text-[11px] font-black" style={{ color: 'var(--subtext-color)' }}>
-                      {group.countryLabel}
-                    </span>
-                    <div className="flex-1 h-px" style={{ background: 'var(--card-border)' }} />
-                  </div>
+          {/* Search Box */}
+          <div className="relative">
+            <input
+              type="text"
+              value={searchCityQuery}
+              onChange={(e) => setSearchCityQuery(e.target.value)}
+              placeholder={isAr ? 'ابحث عن مدينة أو دولة...' : 'Search city or country...'}
+              className="w-full pl-3 pr-8 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+            />
+            <Search className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-2.5" />
+          </div>
 
-                  {/* City chips */}
-                  <div className="flex flex-wrap gap-1.5">
-                    {group.cities.map(c => {
-                      const isSelected = !settings.useGeolocation && settings.selectedCity === c.city;
-                      return (
-                        <button
-                          key={`${c.city}_${c.country}`}
-                          onClick={() => handleCitySelect(c)}
-                          className="px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all hover:scale-105 active:scale-95"
-                          style={{
-                            background: isSelected ? '#4f46e5' : 'var(--card-bg)',
-                            color: isSelected ? '#ffffff' : 'var(--text-color)',
-                            border: `1px solid ${isSelected ? '#4f46e5' : 'var(--card-border)'}`,
-                          }}
-                        >
-                          {isSelected && '✓ '}{isAr ? c.nameAr : c.city}
-                        </button>
-                      );
-                    })}
-                  </div>
+          {/* Preset Cities Grid */}
+          <div className="max-h-56 overflow-y-auto space-y-3 pr-1">
+            {groupedCities.map((group) => (
+              <div key={group.countryLabel} className="space-y-1">
+                <span className="text-[10px] font-bold text-slate-400 block px-1">
+                  {group.flag} {group.countryLabel}
+                </span>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {group.cities.map((c) => {
+                    const isSelected = settings.selectedCity.toLowerCase() === c.city.toLowerCase();
+                    return (
+                      <button
+                        key={c.city}
+                        onClick={() => handleCitySelect(c)}
+                        className={`p-2 rounded-xl text-start text-xs font-bold transition-all flex items-center justify-between ${
+                          isSelected
+                            ? 'bg-indigo-600 text-white shadow-sm'
+                            : 'bg-slate-950/60 hover:bg-slate-800 text-slate-300 border border-slate-800/80'
+                        }`}
+                      >
+                        <span className="truncate">{isAr ? c.nameAr : c.city}</span>
+                        {isSelected && <Check className="w-3 h-3 text-white shrink-0" />}
+                      </button>
+                    );
+                  })}
                 </div>
-              ))
-            )}
-          </div>
-
-          {/* Custom city input + method selector */}
-          <div className="p-3 border-t" style={{ borderColor: 'var(--card-border)' }}>
-            <form onSubmit={handleCustomCitySubmit} className="flex items-center gap-1.5 mb-2">
-              <input
-                type="text"
-                value={customCityInput}
-                onChange={e => setCustomCityInput(e.target.value)}
-                placeholder={isAr ? 'مدينتك مش موجودة؟ اكتبها هنا...' : 'Custom city name...'}
-                className="flex-1 px-2.5 py-1.5 rounded-lg text-[11px] focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                style={{
-                  background: 'var(--input-bg)',
-                  color: 'var(--text-color)',
-                  border: '1px solid var(--card-border)',
-                }}
-              />
-              <button
-                type="submit"
-                disabled={!customCityInput.trim()}
-                className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white text-[11px] font-bold flex items-center gap-1 transition-all"
-              >
-                <Plus className="w-3 h-3" />
-                {t('save')}
-              </button>
-            </form>
-
-            {/* Method selector toggle */}
-            <button
-              type="button"
-              onClick={() => setShowMethodSelector(!showMethodSelector)}
-              className="w-full flex items-center justify-between text-[11px] py-1 transition-colors"
-              style={{ color: 'var(--subtext-color)' }}
-            >
-              <span className="flex items-center gap-1">
-                <Layers className="w-3 h-3 text-indigo-400" />
-                {isAr ? `طريقة الحساب: ${currentMethodName.split('(')[0].trim()}` : 'Calculation Method'}
-              </span>
-              <Settings2 className="w-3 h-3 text-indigo-400" />
-            </button>
-
-            {showMethodSelector && (
-              <div className="mt-1 space-y-1 max-h-36 overflow-y-auto">
-                {CALCULATION_METHODS.map(m => (
-                  <button
-                    key={m.id}
-                    onClick={() => {
-                      updateSettings({ calculationMethod: m.id });
-                      showToast(isAr ? 'تم تحديث طريقة الحساب ✅' : 'Method updated ✅', 'info');
-                    }}
-                    className="w-full text-start px-2 py-1.5 rounded-lg text-[10px] flex items-center justify-between transition-all"
-                    style={{
-                      background: settings.calculationMethod === m.id ? 'rgba(16,185,129,0.15)' : 'transparent',
-                      color: settings.calculationMethod === m.id ? '#10b981' : 'var(--subtext-color)',
-                      border: `1px solid ${settings.calculationMethod === m.id ? 'rgba(16,185,129,0.3)' : 'transparent'}`,
-                    }}
-                  >
-                    <span>{m.nameAr}</span>
-                    {settings.calculationMethod === m.id && <Check className="w-3 h-3" />}
-                  </button>
-                ))}
               </div>
-            )}
+            ))}
           </div>
+
+          {/* Custom City Input */}
+          <form onSubmit={handleCustomCitySubmit} className="pt-2 border-t border-slate-800 flex items-center gap-1.5">
+            <input
+              type="text"
+              value={customCityInput}
+              onChange={(e) => setCustomCityInput(e.target.value)}
+              placeholder={isAr ? 'أو اكتب اسم مدينتك هنا...' : 'Or enter custom city...'}
+              className="flex-1 px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+            />
+            <button
+              type="submit"
+              className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold"
+            >
+              {isAr ? 'تطبيق' : 'Apply'}
+            </button>
+          </form>
+
         </div>
       )}
-    </>
+
+    </div>
   );
 };
