@@ -273,12 +273,43 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (settings.soundEnabled) {
       playSuccessPing();
     }
-    confetti({
-      particleCount: 75,
-      spread: 65,
+    // Classic Luxury Multi-Stage Celebration (Gold, Platinum & Royal Sapphire)
+    const count = 60;
+    const defaults = {
       origin: { y: 0.7 },
-      colors: ['#6366f1', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6'],
+      colors: ['#D4AF37', '#F3E5AB', '#C5A059', '#6366F1', '#4F46E5', '#10B981'],
+    };
+
+    // Center burst
+    confetti({
+      ...defaults,
+      particleCount: Math.floor(count * 0.75),
+      spread: 70,
+      startVelocity: 45,
+      scalar: 1.1,
     });
+
+    // Left cannon
+    setTimeout(() => {
+      confetti({
+        ...defaults,
+        particleCount: 35,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0, y: 0.75 },
+      });
+    }, 150);
+
+    // Right cannon
+    setTimeout(() => {
+      confetti({
+        ...defaults,
+        particleCount: 35,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1, y: 0.75 },
+      });
+    }, 300);
   }, [settings.soundEnabled]);
 
   // Translation helper
