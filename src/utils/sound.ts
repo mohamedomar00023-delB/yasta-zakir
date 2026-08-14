@@ -495,6 +495,38 @@ export const playWarningAlert = () => {
 };
 
 /**
+ * Urgent Countdown & Overdue Alarm Alert (3-tone rapid burst)
+ */
+export const playUrgentAlert = () => {
+  try {
+    const { ctx, master } = getAudioContext();
+    const now = ctx.currentTime;
+
+    // Rapid urgent pulses (880Hz, 740Hz, 980Hz)
+    const tones = [880, 740, 980];
+    tones.forEach((freq, idx) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(freq, now + idx * 0.12);
+
+      gain.gain.setValueAtTime(0, now + idx * 0.12);
+      gain.gain.linearRampToValueAtTime(0.16, now + idx * 0.12 + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.12 + 0.18);
+
+      osc.connect(gain);
+      gain.connect(master);
+
+      osc.start(now + idx * 0.12);
+      osc.stop(now + idx * 0.12 + 0.2);
+    });
+  } catch (err) {
+    console.warn('Urgent audio alert error:', err);
+  }
+};
+
+/**
  * Stops any currently active ambient study sound generator
  */
 export const stopAmbientSound = () => {
