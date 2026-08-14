@@ -12,14 +12,22 @@ import {
   Award,
   Quote,
   Flame,
-  Zap
+  Zap,
+  Sparkles,
+  Camera,
+  Share2,
+  Layers,
+  BookOpen,
+  CheckCircle2,
+  Trash2
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { ACADEMIC_STAGES, PRESET_AVATARS } from '../../utils/presets';
 import { AvatarType } from '../../types';
+import { haptic } from '../../utils/haptics';
 
 export const EditProfileModal: React.FC = () => {
-  const { profile, updateProfile, isEditProfileOpen, setIsEditProfileOpen, settings, setLanguage, showToast } = useApp();
+  const { profile, updateProfile, isEditProfileOpen, setIsEditProfileOpen, settings, setLanguage, showToast, triggerCelebration } = useApp();
 
   const isAr = settings.language !== 'en';
 
@@ -80,6 +88,7 @@ export const EditProfileModal: React.FC = () => {
             const compressed = canvas.toDataURL('image/jpeg', 0.85);
             setAvatarType('upload');
             setAvatarValue(compressed);
+            haptic.success();
             showToast(isAr ? 'تم تحميل صورتك الشخصية بنجاح! 📸' : 'Profile photo uploaded! 📸', 'success');
           }
         };
@@ -91,6 +100,7 @@ export const EditProfileModal: React.FC = () => {
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
+    haptic.celebration();
     updateProfile({
       name: name.trim() || (isAr ? 'طالب متميز' : 'Student'),
       phone: phone.trim(),
@@ -104,8 +114,16 @@ export const EditProfileModal: React.FC = () => {
       avatarValue,
     });
     setIsEditProfileOpen(false);
+    triggerCelebration();
     showToast(isAr ? 'تم حفظ بطاقة الطالب والبيانات بنجاح 🎓' : 'Profile updated successfully 🎓', 'success');
   };
+
+  const AVATAR_PRESETS_GROUPS = [
+    { label: isAr ? '🎓 طلاب وخريجون' : 'Students', items: ['🎓', '🧑‍🎓', '👩‍🎓', '📚', '🎒', '🧠'] },
+    { label: isAr ? '👨‍💻 تقنية وبرمجة' : 'Tech & Coding', items: ['💻', '🧑‍💻', '👩‍💻', '⚡', '🚀', '🤖'] },
+    { label: isAr ? '🩺 طب وهندسة وعلوم' : 'Medicine & STEM', items: ['🔬', '🩺', '📐', '🧬', '🔭', '🧪'] },
+    { label: isAr ? '🌟 طموح وتميز' : 'Ambition & Honors', items: ['👑', '💎', '🏆', '🦁', '🦅', '✨'] },
+  ];
 
   return (
     <AnimatePresence>
@@ -119,37 +137,33 @@ export const EditProfileModal: React.FC = () => {
           initial={{ opacity: 0, scale: 0.95, y: 15 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 15 }}
-          className="w-full max-w-2xl transform rounded-3xl border shadow-2xl relative my-auto overflow-hidden max-h-[90vh] flex flex-col text-start"
+          className="w-full max-w-2xl transform rounded-3xl border shadow-2xl relative my-auto overflow-hidden max-h-[92vh] flex flex-col text-start"
           style={{ background: 'var(--panel-bg)', borderColor: 'var(--panel-border)' }}
         >
-          {/* Header with Language Switcher */}
-          <div className="p-4 sm:p-6 border-b flex items-center justify-between gap-3" style={{ borderColor: 'var(--card-border)' }}>
+          {/* Header Bar */}
+          <div className="p-4 sm:p-5 border-b flex items-center justify-between gap-3" style={{ borderColor: 'var(--card-border)' }}>
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="p-2.5 rounded-2xl bg-gradient-to-tr from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/20 shrink-0">
-                <GraduationCap className="w-5 h-5" />
+              <div className="p-2.5 rounded-2xl bg-gradient-to-tr from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/20 shrink-0 text-lg">
+                🎓
               </div>
               <div className="min-w-0">
                 <h3 className="text-base sm:text-lg font-black truncate" style={{ color: 'var(--text-color)' }}>
-                  {isAr ? 'بطاقة الطالب والملف الشخصي 🎓' : 'Student Profile Card 🎓'}
+                  {isAr ? 'كارنيه الطالب والملف الأكاديمي' : 'Student ID & Academic Profile'}
                 </h3>
                 <p className="text-xs text-slate-400 truncate">
-                  {isAr ? 'تعديل الاسم والمرحلة الدراسية واللغة' : 'Customize name, academic stage & language'}
+                  {isAr ? 'تخصيص الهوية الدراسية، المسار، والمعدل المستهدف' : 'Customize identity, major, and target GPA'}
                 </p>
               </div>
             </div>
 
             <div className="flex items-center gap-2 shrink-0">
-              {/* Instant Language Toggle Button */}
               <button
                 type="button"
-                onClick={() => setLanguage(isAr ? 'en' : 'ar')}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-black transition-all hover:scale-105"
-                style={{
-                  background: 'var(--input-bg)',
-                  borderColor: 'var(--card-border)',
-                  color: 'var(--text-color)',
+                onClick={() => {
+                  haptic.selection();
+                  setLanguage(isAr ? 'en' : 'ar');
                 }}
-                title={isAr ? 'Switch to English' : 'التحويل للغة العربية'}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-black transition-all hover:scale-105 bg-slate-900 border-slate-700"
               >
                 <span className="text-sm">{isAr ? '🇬🇧' : '🇪🇬'}</span>
                 <span className="text-amber-400">{isAr ? 'English' : 'عربي'}</span>
@@ -157,73 +171,95 @@ export const EditProfileModal: React.FC = () => {
 
               <button
                 onClick={() => setIsEditProfileOpen(false)}
-                className="p-2 rounded-xl hover:bg-slate-700/40 text-slate-400 hover:text-white transition-colors"
+                className="p-2 rounded-xl hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
           </div>
 
-          {/* Body */}
-          <div className="p-4 sm:p-6 overflow-y-auto flex-1 space-y-5">
+          {/* Body Scroll Container */}
+          <div className="p-4 sm:p-6 overflow-y-auto space-y-5 flex-1 pr-2">
+            
+            {/* Live Holographic Student ID Badge Preview */}
+            <div className="relative p-5 rounded-3xl border overflow-hidden shadow-2xl bg-gradient-to-br from-indigo-950/70 via-purple-950/50 to-slate-900/90 border-indigo-500/30">
+              
+              {/* Decorative Glow */}
+              <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-500/15 rounded-full blur-2xl pointer-events-none" />
+              <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-500/15 rounded-full blur-2xl pointer-events-none" />
 
-            {/* Live Profile Card Preview */}
-            <div className="p-4 sm:p-5 rounded-3xl border border-indigo-500/30 bg-gradient-to-r from-indigo-950/60 via-purple-950/40 to-slate-900/80 shadow-xl relative overflow-hidden">
-              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
-
-                {/* Avatar with Glow Ring */}
-                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl sm:rounded-3xl bg-gradient-to-tr from-indigo-500 to-pink-500 p-0.5 shadow-lg shadow-indigo-500/30 flex-shrink-0">
-                  <div className="w-full h-full rounded-[14px] sm:rounded-[22px] flex items-center justify-center overflow-hidden bg-slate-900">
+              <div className="relative z-10 flex flex-col sm:flex-row items-center sm:items-start gap-4">
+                
+                {/* Avatar Preview */}
+                <div className="relative group shrink-0">
+                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-indigo-600 to-purple-600 border-2 border-indigo-400/50 shadow-xl flex items-center justify-center text-3xl overflow-hidden">
                     {avatarType === 'upload' && avatarValue ? (
                       <img src={avatarValue} alt="Avatar" className="w-full h-full object-cover" />
                     ) : (
-                      <span className="text-3xl sm:text-4xl">{avatarValue || '🎓'}</span>
+                      <span>{avatarValue || '🎓'}</span>
                     )}
                   </div>
+                  <label className="absolute -bottom-1 -right-1 p-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg cursor-pointer transition-transform hover:scale-110">
+                    <Camera className="w-3.5 h-3.5" />
+                    <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
+                  </label>
                 </div>
 
-                {/* Info summary */}
-                <div className="text-center sm:text-start flex-1 min-w-0">
-                  <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-1">
-                    <h4 className="text-lg sm:text-xl font-black text-white truncate">{name || (isAr ? 'اسم الطالب' : 'Student Name')}</h4>
-                    <span className="px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-                      {gradeLevel || stageGrades[0]}
+                {/* Info on Card */}
+                <div className="flex-1 min-w-0 text-center sm:text-start space-y-1.5">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                    <h4 className="text-lg font-black text-white truncate">
+                      {name || (isAr ? 'محمد إسماعيل' : 'Student Name')}
+                    </h4>
+                    <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-bold self-center sm:self-auto">
+                      {isAr ? currentStageObj.titleAr : currentStageObj.titleEn}
                     </span>
                   </div>
 
-                  <p className="text-xs text-indigo-300 font-semibold mb-2">
-                    {isAr ? currentStageObj.titleAr : currentStageObj.titleEn} {schoolOrUniversity ? `• ${schoolOrUniversity}` : ''}
+                  <p className="text-xs text-slate-300 font-semibold truncate">
+                    {schoolOrUniversity || (isAr ? 'جامعة القاهرة — كلية الهندسة وعلوم الحاسب' : 'Cairo University')}
                   </p>
 
-                  <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 text-[11px] font-bold text-slate-300 mt-2">
-                    <span className="flex items-center gap-1 text-purple-400">
-                      <Zap className="w-3.5 h-3.5 fill-purple-400" />
-                      <span>{profile.xpPoints || 0} XP</span>
+                  {/* Badges Row */}
+                  <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-1 text-xs">
+                    <span className="flex items-center gap-1 text-purple-300 px-2 py-0.5 rounded-lg bg-purple-500/15 border border-purple-500/30 font-mono font-bold">
+                      <Zap className="w-3 h-3 fill-purple-400" />
+                      <span>{profile.xpPoints || 150} XP</span>
                     </span>
-                    <span className="flex items-center gap-1 text-rose-400">
-                      <Flame className="w-3.5 h-3.5 fill-rose-400" />
-                      <span>{profile.streakDays || 1} {isAr ? 'أيام تتابع 🔥' : 'Streak Days'}</span>
+
+                    <span className="flex items-center gap-1 text-rose-300 px-2 py-0.5 rounded-lg bg-rose-500/15 border border-rose-500/30 font-bold">
+                      <Flame className="w-3 h-3 fill-rose-400" />
+                      <span>{profile.streakDays || 1} {isAr ? 'أيام تتابع 🔥' : 'Streak'}</span>
                     </span>
+
                     {targetGPA && (
-                      <span className="flex items-center gap-1 text-amber-400 px-2 py-0.5 rounded-lg bg-amber-500/15 border border-amber-500/30">
-                        <Award className="w-3.5 h-3.5" />
+                      <span className="flex items-center gap-1 text-amber-300 px-2 py-0.5 rounded-lg bg-amber-500/15 border border-amber-500/30 font-bold">
+                        <Award className="w-3 h-3" />
                         <span>{targetGPA}</span>
                       </span>
                     )}
+
                     {dreamGoal && (
-                      <span className="flex items-center gap-1 text-emerald-400">
-                        <Target className="w-3.5 h-3.5" />
-                        <span>{dreamGoal}</span>
+                      <span className="flex items-center gap-1 text-emerald-300 px-2 py-0.5 rounded-lg bg-emerald-500/15 border border-emerald-500/30 font-bold truncate max-w-[200px]">
+                        <Target className="w-3 h-3" />
+                        <span className="truncate">{dreamGoal}</span>
                       </span>
                     )}
                   </div>
+
+                  {bio && (
+                    <p className="text-[11px] text-slate-400 italic pt-1 line-clamp-1">
+                      ❝ {bio} ❞
+                    </p>
+                  )}
                 </div>
 
               </div>
             </div>
 
+            {/* Edit Form */}
             <form onSubmit={handleSave} className="space-y-4">
-
+              
               {/* Row 1: Name and Phone */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
@@ -231,18 +267,14 @@ export const EditProfileModal: React.FC = () => {
                     <User className="w-3.5 h-3.5 text-indigo-400" />
                     <span>{isAr ? 'اسم الطالب بالكامل *' : 'Full Student Name *'}</span>
                   </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      required
-                      value={name}
-                      onFocus={e => e.target.select()}
-                      onChange={e => setName(e.target.value)}
-                      placeholder={isAr ? 'اكتب اسمك هنا (مثال: محمد)' : 'Enter your name (e.g. Mohamed)'}
-                      className="w-full px-4 py-2.5 rounded-2xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500 border"
-                      style={{ background: 'var(--input-bg)', color: 'var(--text-color)', borderColor: 'var(--card-border)' }}
-                    />
-                  </div>
+                  <input
+                    type="text"
+                    required
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder={isAr ? 'مثال: محمد إسماعيل' : 'e.g. Mohamed Ismail'}
+                    className="w-full px-3.5 py-2.5 rounded-2xl text-xs font-bold bg-slate-900 border border-slate-800 text-white focus:outline-none focus:border-indigo-500"
+                  />
                 </div>
 
                 <div>
@@ -253,11 +285,9 @@ export const EditProfileModal: React.FC = () => {
                   <input
                     type="tel"
                     value={phone}
-                    onFocus={e => e.target.select()}
-                    onChange={e => setPhone(e.target.value)}
+                    onChange={(e) => setPhone(e.target.value)}
                     placeholder="01012345678"
-                    className="w-full px-4 py-2.5 rounded-2xl text-xs font-medium focus:outline-none border"
-                    style={{ background: 'var(--input-bg)', color: 'var(--text-color)', borderColor: 'var(--card-border)' }}
+                    className="w-full px-3.5 py-2.5 rounded-2xl text-xs font-bold bg-slate-900 border border-slate-800 text-white focus:outline-none focus:border-indigo-500 dir-ltr text-right"
                   />
                 </div>
               </div>
@@ -267,76 +297,68 @@ export const EditProfileModal: React.FC = () => {
                 <div>
                   <label className="block text-xs font-bold mb-1.5 text-slate-300 flex items-center gap-1">
                     <Building2 className="w-3.5 h-3.5 text-indigo-400" />
-                    <span>{isAr ? 'المدرسة / المعهد / الجامعة' : 'School / College / University'}</span>
+                    <span>{isAr ? 'المدرسة / الكلية / الجامعة' : 'School / University'}</span>
                   </label>
                   <input
                     type="text"
                     value={schoolOrUniversity}
-                    onFocus={e => e.target.select()}
-                    onChange={e => setSchoolOrUniversity(e.target.value)}
-                    placeholder={isAr ? 'مثال: جامعة القاهرة، كلية الهندسة...' : 'e.g. Cairo University...'}
-                    className="w-full px-4 py-2.5 rounded-2xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 border"
-                    style={{ background: 'var(--input-bg)', color: 'var(--text-color)', borderColor: 'var(--card-border)' }}
+                    onChange={(e) => setSchoolOrUniversity(e.target.value)}
+                    placeholder={isAr ? 'مثال: كلية الهندسة وعلوم الحاسب' : 'e.g. Computer Science & Engineering'}
+                    className="w-full px-3.5 py-2.5 rounded-2xl text-xs font-bold bg-slate-900 border border-slate-800 text-white focus:outline-none focus:border-indigo-500"
                   />
                 </div>
 
                 <div>
                   <label className="block text-xs font-bold mb-1.5 text-slate-300 flex items-center gap-1">
                     <Target className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>{isAr ? 'الهدف الأسمى / الكلية المنشودة' : 'Dream Goal / Target'}</span>
+                    <span>{isAr ? 'الهدف الأكاديمي والمهني' : 'Dream Goal'}</span>
                   </label>
                   <input
                     type="text"
                     value={dreamGoal}
-                    onFocus={e => e.target.select()}
-                    onChange={e => setDreamGoal(e.target.value)}
-                    placeholder={isAr ? 'مثال: الترتيب على الدفعة، كلية الهندسة...' : 'e.g. Top 1% in Class...'}
-                    className="w-full px-4 py-2.5 rounded-2xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 border"
-                    style={{ background: 'var(--input-bg)', color: 'var(--text-color)', borderColor: 'var(--card-border)' }}
+                    onChange={(e) => setDreamGoal(e.target.value)}
+                    placeholder={isAr ? 'مثال: مهندس برمجيات وذكاء اصطناعي' : 'e.g. Lead AI Software Engineer'}
+                    className="w-full px-3.5 py-2.5 rounded-2xl text-xs font-bold bg-slate-900 border border-slate-800 text-white focus:outline-none focus:border-indigo-500"
                   />
                 </div>
               </div>
 
-              {/* Row 3: Supercharged Target GPA & Motto */}
+              {/* Row 3: Target GPA & Presets */}
               <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
-                    <Award className="w-4 h-4 text-amber-400" />
-                    <span>{isAr ? 'التقدير / المعدل المستهدف' : 'Target GPA / Score'}</span>
-                  </label>
-                  <span className="text-[11px] text-amber-400 font-bold">{targetGPA}</span>
-                </div>
-
-                {/* Custom input */}
+                <label className="block text-xs font-bold mb-1.5 text-slate-300 flex items-center gap-1">
+                  <Award className="w-3.5 h-3.5 text-amber-400" />
+                  <span>{isAr ? 'التقدير والمعدل المستهدف' : 'Target GPA / Score'}</span>
+                </label>
+                
                 <input
                   type="text"
                   value={targetGPA}
-                  onFocus={e => e.target.select()}
-                  onChange={e => setTargetGPA(e.target.value)}
-                  placeholder={isAr ? 'اكتب تقديرك أو اختر من النماذج أدناه (مثال: GPA 3.9 أو 97.5%)' : 'Type custom GPA or select presets below (e.g. GPA 3.9 or 98%)'}
-                  className="w-full px-4 py-2.5 rounded-2xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-amber-500 border mb-2"
-                  style={{ background: 'var(--input-bg)', color: 'var(--text-color)', borderColor: 'var(--card-border)' }}
+                  onChange={(e) => setTargetGPA(e.target.value)}
+                  placeholder={isAr ? 'امتياز (A+) أو GPA 3.9' : 'Summa Cum Laude (A+)'}
+                  className="w-full px-3.5 py-2 rounded-2xl text-xs font-bold bg-slate-900 border border-slate-800 text-amber-300 focus:outline-none focus:border-amber-500 mb-2"
                 />
 
-                {/* Quick Presets Chips */}
                 <div className="flex flex-wrap gap-1.5">
                   {[
                     isAr ? '💎 امتياز مع مرتبة الشرف (A+)' : '💎 Summa Cum Laude (A+)',
-                    isAr ? '🌟 امتياز (GPA 3.8 - 4.0)' : '🌟 High Honors (GPA 3.8+)',
+                    isAr ? '🌟 امتياز (GPA 3.8+)' : '🌟 High Honors (GPA 3.8+)',
                     isAr ? '⚡ جيد جداً مرتفع (GPA 3.4+)' : '⚡ Honors (GPA 3.4+)',
                     isAr ? '👑 98% - 100% (أوائل جمهورية)' : '👑 98%+ Top Ranked',
                     isAr ? '🎯 95% فأعلى (كليات القمة)' : '🎯 95%+ Elite Target',
-                    isAr ? '🥇 90% فأعلى (تفوق عالي)' : '🥇 90%+ Honors',
-                    isAr ? '✨ الترتيب على الدفعة (Top 10)' : '✨ Top 10 in Class',
+                    isAr ? '🥇 90% فأعلى (تفوق)' : '🥇 90%+ High Marks',
                   ].map(preset => (
                     <button
                       key={preset}
                       type="button"
-                      onClick={() => setTargetGPA(preset)}
-                      className={`px-2.5 py-1 rounded-xl text-[11px] font-bold transition-all border ${targetGPA === preset
-                          ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-sm font-black'
+                      onClick={() => {
+                        haptic.selection();
+                        setTargetGPA(preset);
+                      }}
+                      className={`px-2.5 py-1 rounded-xl text-[11px] font-bold transition-all border ${
+                        targetGPA === preset
+                          ? 'bg-amber-500 text-slate-950 border-amber-400 font-black shadow-sm'
                           : 'bg-slate-900/60 text-slate-400 hover:text-slate-200 border-slate-800'
-                        }`}
+                      }`}
                     >
                       {preset}
                     </button>
@@ -344,86 +366,80 @@ export const EditProfileModal: React.FC = () => {
                 </div>
               </div>
 
-              {/* Motto / Quote */}
+              {/* Row 4: Motto / Quote */}
               <div>
                 <label className="block text-xs font-bold mb-1.5 text-slate-300 flex items-center gap-1">
                   <Quote className="w-3.5 h-3.5 text-purple-400" />
-                  <span>{isAr ? 'حكمتك المفضلة / شعارك الدراسي' : 'Student Motto / Quote'}</span>
+                  <span>{isAr ? 'شعارك ومقولتك الدراسية' : 'Student Motto'}</span>
                 </label>
                 <input
                   type="text"
                   value={bio}
-                  onFocus={e => e.target.select()}
-                  onChange={e => setBio(e.target.value)}
-                  placeholder={isAr ? 'مثال: بالجد والاجتهاد نصل إلى القمة...' : 'e.g. Focus on progress, not perfection...'}
-                  className="w-full px-4 py-2.5 rounded-2xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 border"
-                  style={{ background: 'var(--input-bg)', color: 'var(--text-color)', borderColor: 'var(--card-border)' }}
+                  onChange={(e) => setBio(e.target.value)}
+                  placeholder={isAr ? 'مثال: بالجد والاجتهاد نصل إلى القمة...' : 'e.g. Hard work pays off...'}
+                  className="w-full px-3.5 py-2.5 rounded-2xl text-xs font-bold bg-slate-900 border border-slate-800 text-white focus:outline-none focus:border-indigo-500"
                 />
               </div>
 
-              {/* Academic Stage Picker */}
+              {/* Row 5: Academic Stage & Grade Level */}
               <div>
                 <label className="block text-xs font-bold mb-2 text-slate-300">
-                  {isAr ? 'المرحلة الدراسية *' : 'Academic Stage *'}
+                  {isAr ? 'المرحلة الدراسية والسنة' : 'Academic Stage & Grade'}
                 </label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-2.5">
                   {ACADEMIC_STAGES.map(stage => {
-                    const selected = academicStage === stage.id;
-                    const stageTitle = isAr ? stage.titleAr : stage.titleEn;
+                    const isSelected = academicStage === stage.id;
                     return (
                       <button
                         key={stage.id}
                         type="button"
                         onClick={() => {
+                          haptic.selection();
                           setAcademicStage(stage.id);
                           const curGrades = isAr ? (stage.gradesAr || stage.grades) : (stage.gradesEn || stage.grades);
                           setGradeLevel(curGrades[0]);
                         }}
-                        className={`p-2.5 rounded-2xl border text-start text-xs font-bold transition-all ${selected
-                            ? 'bg-indigo-600 border-indigo-500 text-white shadow-md'
-                            : 'border-slate-800 text-slate-400 hover:border-slate-700'
-                          }`}
-                        style={!selected ? { background: 'var(--card-bg)' } : {}}
+                        className={`p-2.5 rounded-2xl border text-xs font-bold text-center transition-all ${
+                          isSelected
+                            ? 'bg-indigo-600 border-indigo-500 text-white shadow-md shadow-indigo-600/30'
+                            : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200'
+                        }`}
                       >
-                        {stageTitle}
+                        {isAr ? stage.titleAr : stage.titleEn}
                       </button>
                     );
                   })}
                 </div>
-              </div>
 
-              {/* Grade Level Pills */}
-              <div>
-                <label className="block text-xs font-bold mb-1.5 text-slate-300">
-                  {isAr ? 'الصف / السنة الدراسية *' : 'Grade / Year *'}
-                </label>
-                <div className="flex flex-wrap gap-1.5">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
                   {stageGrades.map(grade => {
                     const isSelected = gradeLevel === grade;
                     return (
                       <button
                         key={grade}
                         type="button"
-                        onClick={() => setGradeLevel(grade)}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${isSelected
-                            ? 'bg-emerald-600 text-white shadow-md scale-105'
-                            : 'border text-slate-300'
-                          }`}
-                        style={!isSelected ? { background: 'var(--card-bg)', borderColor: 'var(--card-border)' } : {}}
+                        onClick={() => {
+                          haptic.selection();
+                          setGradeLevel(grade);
+                        }}
+                        className={`p-2 rounded-xl border text-[11px] font-bold text-center transition-all ${
+                          isSelected
+                            ? 'bg-purple-600 border-purple-500 text-white shadow-sm'
+                            : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:text-slate-200'
+                        }`}
                       >
-                        {isSelected && '✓ '}{grade}
+                        {grade}
                       </button>
                     );
                   })}
                 </div>
               </div>
 
-              {/* Avatar & Photo Picker */}
+              {/* Row 6: Avatar Presets Grid */}
               <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="text-xs font-bold text-slate-300">
-                    {isAr ? 'الصورة الشخصية أو الأفاتار التعبيري' : 'Profile Picture or Avatar'}
-                  </label>
+                <label className="block text-xs font-bold mb-2 text-slate-300 flex items-center justify-between">
+                  <span>{isAr ? 'اختر الأيقونة أو الأفاتار المفضل' : 'Select Avatar Icon'}</span>
                   {avatarType === 'upload' && (
                     <button
                       type="button"
@@ -431,69 +447,60 @@ export const EditProfileModal: React.FC = () => {
                         setAvatarType('emoji');
                         setAvatarValue('🎓');
                       }}
-                      className="text-[11px] text-rose-400 hover:underline font-bold"
+                      className="text-[10px] text-rose-400 hover:text-rose-300 font-bold"
                     >
-                      {isAr ? '🗑️ حذف الصورة واستخدام رمز تعبيري' : 'Reset to emoji avatar'}
+                      {isAr ? 'إزالة الصورة المرفوعة' : 'Remove Uploaded'}
                     </button>
                   )}
-                </div>
+                </label>
 
-                {/* Upload Button */}
-                <div className="mb-3">
-                  <label className="cursor-pointer flex items-center justify-center gap-2.5 p-3.5 rounded-2xl border-2 border-dashed border-indigo-500/40 hover:border-indigo-500 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 hover:text-white transition-all text-xs font-bold shadow-sm">
-                    <Upload className="w-4 h-4 text-indigo-400" />
-                    <span>{avatarType === 'upload' ? (isAr ? '📸 تغيير صورتك الشخصية (اختر صورة جديدة)' : 'Change Photo') : (isAr ? '📸 اضغط هنا لاختيار أو التقاط صورة شخصية لك' : 'Upload your photo')}</span>
-                    <input type="file" accept="image/*" className="hidden" onChange={handleFileUpload} />
-                  </label>
-                </div>
-
-                <p className="text-[11px] text-slate-400 font-bold mb-2">
-                  {isAr ? 'أو اختر رمزاً تعبيرياً يعبر عنك:' : 'Or choose a preset avatar:'}
-                </p>
-
-                <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
-                  {PRESET_AVATARS.map(avatar => {
-                    const avatarTitle = isAr ? avatar.titleAr : avatar.titleEn;
-                    return (
-                      <button
-                        key={avatar.id}
-                        type="button"
-                        onClick={() => {
-                          setAvatarType('emoji');
-                          setAvatarValue(avatar.emoji);
-                        }}
-                        className={`p-2 rounded-2xl border flex flex-col items-center justify-center transition-all ${avatarType === 'emoji' && avatarValue === avatar.emoji
-                            ? 'border-indigo-500 bg-indigo-500/30 text-white scale-110 shadow-lg'
-                            : 'border-slate-800 bg-slate-900/50 text-slate-300 hover:border-slate-600'
+                <div className="space-y-2">
+                  {AVATAR_PRESETS_GROUPS.map(group => (
+                    <div key={group.label} className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-[10px] text-slate-400 font-semibold min-w-[90px]">{group.label}:</span>
+                      {group.items.map(emoji => (
+                        <button
+                          key={emoji}
+                          type="button"
+                          onClick={() => {
+                            haptic.selection();
+                            setAvatarType('emoji');
+                            setAvatarValue(emoji);
+                          }}
+                          className={`w-9 h-9 rounded-xl text-lg flex items-center justify-center transition-all ${
+                            avatarType === 'emoji' && avatarValue === emoji
+                              ? 'bg-indigo-600 scale-110 shadow-md ring-2 ring-indigo-400'
+                              : 'bg-slate-900 border border-slate-800 hover:bg-slate-800'
                           }`}
-                      >
-                        <span className="text-2xl">{avatar.emoji}</span>
-                        <span className="text-[9px] mt-0.5 opacity-80">{avatarTitle}</span>
-                      </button>
-                    );
-                  })}
+                        >
+                          {emoji}
+                        </button>
+                      ))}
+                    </div>
+                  ))}
                 </div>
               </div>
 
-              {/* Footer action buttons */}
-              <div className="flex items-center justify-end gap-2 pt-4 border-t" style={{ borderColor: 'var(--card-border)' }}>
+              {/* Submit Buttons */}
+              <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-slate-800">
                 <button
                   type="button"
                   onClick={() => setIsEditProfileOpen(false)}
-                  className="px-4 py-2.5 rounded-2xl text-xs font-bold hover:bg-slate-700/40 text-slate-400"
+                  className="px-4 py-2.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold"
                 >
                   {isAr ? 'إلغاء' : 'Cancel'}
                 </button>
+
                 <button
                   type="submit"
-                  className="px-6 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-lg shadow-indigo-600/30 transition-all hover:scale-105"
+                  className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:opacity-95 text-white text-xs font-black shadow-lg shadow-indigo-600/30 active:scale-95 transition-all cursor-pointer"
                 >
-                  <Check className="w-4 h-4" />
-                  <span>{isAr ? 'حفظ بطاقة الطالب' : 'Save Profile'}</span>
+                  {isAr ? 'حفظ بطاقة الطالب 🎓' : 'Save Profile 🎓'}
                 </button>
               </div>
 
             </form>
+
           </div>
         </motion.div>
       </div>
