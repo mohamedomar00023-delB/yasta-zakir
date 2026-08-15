@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Download, Upload, Database, Volume2, Bell, CheckCircle2, Sparkles } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { getTodayDateString } from '../../utils/formatters';
-import { playAdhanChime, stopActiveAudio } from '../../utils/sound';
+import { playNotificationSound, stopActiveAudio } from '../../utils/sound';
 
 export const BackupModal: React.FC = () => {
   const {
@@ -59,8 +59,8 @@ export const BackupModal: React.FC = () => {
   };
 
   const handleSoundTest = () => {
-    playAdhanChime(settings.chimeTone, settings.volume);
-    showToast(isAr ? 'جاري تشغيل صوت الأذان / النغمة المختارة 🔊' : 'Playing selected Adhan audio 🔊', 'info');
+    playNotificationSound(settings.notificationSound || 'soft-bell', settings.volume);
+    showToast(isAr ? 'جاري تشغيل نغمة التنبيهات المختارة 🔊' : 'Playing selected notification tone 🔊', 'info');
   };
 
   const handleNotificationToggle = async () => {
@@ -174,9 +174,9 @@ export const BackupModal: React.FC = () => {
             {/* Sound Test */}
             <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 flex items-center justify-between gap-4">
               <div>
-                <h4 className="text-sm font-bold text-slate-200">{isAr ? 'اختبار صوت الأذان والتنبيهات' : 'Test Audio Adhan'}</h4>
+                <h4 className="text-sm font-bold text-slate-200">{isAr ? 'اختبار نغمة التنبيهات والإشعارات' : 'Test Notification Sound'}</h4>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  {isAr ? 'تجربة صوت الأذان أو النغمة المختارة حالياً' : 'Play a test preview of your selected notification sound.'}
+                  {isAr ? 'تجربة نغمة الإشعار المختارة حالياً' : 'Play a test preview of your selected notification sound.'}
                 </p>
               </div>
 

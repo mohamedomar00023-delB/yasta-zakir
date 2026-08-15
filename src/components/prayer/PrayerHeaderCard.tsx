@@ -16,7 +16,6 @@ import { PrayerItem } from '../../types';
 import { formatSecondsToTimer, formatTime12h } from '../../utils/formatters';
 import { CALCULATION_METHODS, PRESET_CITIES, PresetCityItem } from '../../utils/presets';
 import { useApp } from '../../context/AppContext';
-import { playAdhan, stopActiveAudio } from '../../utils/sound';
 import { haptic } from '../../utils/haptics';
 
 interface PrayerHeaderCardProps {
@@ -50,7 +49,6 @@ export const PrayerHeaderCard: React.FC<PrayerHeaderCardProps> = ({
   const [isCityMenuOpen, setIsCityMenuOpen] = useState(false);
   const [searchCityQuery, setSearchCityQuery] = useState('');
   const [customCityInput, setCustomCityInput] = useState('');
-  const [isPlayingAdhanPreview, setIsPlayingAdhanPreview] = useState(false);
 
   const btnRef = useRef<HTMLButtonElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -116,20 +114,6 @@ export const PrayerHeaderCard: React.FC<PrayerHeaderCardProps> = ({
     showToast(isAr ? 'جاري تحديد موقعك تلقائياً عبر GPS 🛰️' : 'Detecting GPS location 🛰️', 'info');
   };
 
-  const handleToggleAdhanPreview = () => {
-    haptic.medium();
-    if (isPlayingAdhanPreview) {
-      stopActiveAudio();
-      setIsPlayingAdhanPreview(false);
-      showToast(isAr ? 'تم إيقاف صوت الأذان' : 'Adhan audio stopped', 'info');
-    } else {
-      setIsPlayingAdhanPreview(true);
-      playAdhan(settings.adhanSound || 'makkah', settings.volume ?? 0.8, () => {
-        setIsPlayingAdhanPreview(false);
-      });
-      showToast(isAr ? 'جاري تشغيل صوت الأذان المختار 🕌' : 'Playing selected Adhan preview 🕌', 'success');
-    }
-  };
 
   const displayLocationName = useMemo(() => {
     const matchedPreset = PRESET_CITIES.find(
@@ -204,20 +188,6 @@ export const PrayerHeaderCard: React.FC<PrayerHeaderCardProps> = ({
 
             {/* Quick Action Badges */}
             <div className="flex items-center justify-center md:justify-start gap-2 pt-1.5 flex-wrap">
-              
-              {/* Adhan Preview */}
-              <button
-                onClick={handleToggleAdhanPreview}
-                className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-all active:scale-95 ${
-                  isPlayingAdhanPreview
-                    ? 'bg-rose-500/20 border-rose-500/40 text-rose-300 shadow-md shadow-rose-500/20'
-                    : 'bg-slate-900/60 border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800/80'
-                }`}
-              >
-                {isPlayingAdhanPreview ? <VolumeX className="w-3.5 h-3.5 text-rose-400" /> : <Volume2 className="w-3.5 h-3.5 text-indigo-400" />}
-                <span>{isPlayingAdhanPreview ? (isAr ? 'إيقاف الأذان' : 'Stop') : (isAr ? 'استماع للأذان' : 'Listen Adhan')}</span>
-              </button>
-
               {/* Athkar Shortcut */}
               <button
                 onClick={() => {

@@ -145,95 +145,16 @@ const ADHAN_STREAMS: Record<Exclude<AdhanSoundId, 'silent'>, { primary: string; 
  * Play Adhan recitation with smart volume, gentle fade-in, and fallbacks
  */
 export const playAdhan = (
-  soundId: AdhanSoundId = 'makkah', 
-  volume: number = 0.8,
+  _soundId: AdhanSoundId = 'silent', 
+  _volume: number = 0.8,
   onEnded?: () => void,
-  options?: { gentleFadeIn?: boolean; quietHours?: boolean }
+  _options?: { gentleFadeIn?: boolean; quietHours?: boolean }
 ) => {
   stopActiveAudio();
-  if (soundId === 'silent') {
-    if (onEnded) onEnded();
-    return;
-  }
-
-  const finalVolume = calculateSmartVolume(volume, { quietHours: options?.quietHours ?? true, isAdhan: true });
-  const streamInfo = ADHAN_STREAMS[soundId] || ADHAN_STREAMS['makkah'];
-
-  try {
-    const audio = new Audio();
-    audio.src = streamInfo.primary;
-    audio.preload = 'auto';
-
-    // Gentle spiritual fade-in if requested
-    if (options?.gentleFadeIn !== false) {
-      audio.volume = Math.min(0.25, finalVolume);
-      let currentVol = audio.volume;
-      const fadeInterval = setInterval(() => {
-        if (!activeAudioElement || activeAudioElement !== audio) {
-          clearInterval(fadeInterval);
-          return;
-        }
-        if (currentVol < finalVolume) {
-          currentVol = Math.min(finalVolume, currentVol + 0.08);
-          audio.volume = currentVol;
-        } else {
-          clearInterval(fadeInterval);
-        }
-      }, 300);
-    } else {
-      audio.volume = finalVolume;
-    }
-    
-    audio.onended = () => {
-      activeAudioElement = null;
-      if (onEnded) onEnded();
-    };
-
-    audio.onerror = () => {
-      console.warn('Primary stream failed, attempting secondary fallback for', soundId);
-      try {
-        const fallbackAudio = new Audio();
-        fallbackAudio.src = streamInfo.fallback;
-        fallbackAudio.preload = 'auto';
-        fallbackAudio.volume = finalVolume;
-        fallbackAudio.onended = () => {
-          activeAudioElement = null;
-          if (onEnded) onEnded();
-        };
-        fallbackAudio.onerror = () => {
-          playSynthesizedTakbeer(finalVolume, onEnded);
-        };
-        fallbackAudio.play().catch(() => playSynthesizedTakbeer(finalVolume, onEnded));
-        activeAudioElement = fallbackAudio;
-      } catch {
-        playSynthesizedTakbeer(finalVolume, onEnded);
-      }
-    };
-
-    const playPromise = audio.play();
-    if (playPromise !== undefined) {
-      playPromise.catch((err) => {
-        console.warn('Autoplay handled, attempting secondary stream:', err);
-        if (streamInfo.fallback && streamInfo.fallback !== streamInfo.primary) {
-          const fallbackAudio = new Audio(streamInfo.fallback);
-          fallbackAudio.volume = finalVolume;
-          fallbackAudio.onended = () => {
-            activeAudioElement = null;
-            if (onEnded) onEnded();
-          };
-          fallbackAudio.play().catch(() => playSynthesizedTakbeer(finalVolume, onEnded));
-          activeAudioElement = fallbackAudio;
-        } else {
-          playSynthesizedTakbeer(finalVolume, onEnded);
-        }
-      });
-    }
-    activeAudioElement = audio;
-  } catch (err) {
-    console.warn('playAdhan error:', err);
-    playSynthesizedTakbeer(finalVolume, onEnded);
-  }
+  if (onEnded) onEnded();
 };
+
+
 
 /**
  * Synthesized Maqam Rast / Bayati Adhan Takbeer (100% Offline fallback)
@@ -508,14 +429,8 @@ export const playNotificationSound = (
 /**
  * Backward-compatible helper for old calls
  */
-export const playAdhanChime = (tone: ChimeToneId = 'full-adhan', volume: number = 0.8) => {
-  if (tone === 'full-adhan') {
-    playAdhan('makkah', volume);
-  } else if (tone === 'takbeer') {
-    playAdhan('takbeer-short', volume);
-  } else {
-    playNotificationSound(tone as NotificationSoundId, volume);
-  }
+export const playAdhanChime = (tone: ChimeToneId = 'soft-bell', volume: number = 0.8) => {
+  playNotificationSound((tone === 'full-adhan' || tone === 'takbeer' ? 'soft-bell' : tone) as NotificationSoundId, volume);
 };
 
 /**

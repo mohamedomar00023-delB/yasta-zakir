@@ -130,7 +130,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   themeId: 'midnight',
   language: 'ar',
   chimeTone: 'soft-bell',
-  adhanSound: 'makkah',
+  adhanSound: 'silent',
   notificationSound: 'soft-bell',
   volume: 0.8,
   soundEnabled: true,

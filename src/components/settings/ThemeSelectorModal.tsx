@@ -10,7 +10,6 @@ import {
   Square, 
   Play, 
   Bell, 
-  Radio,
   Sliders,
   Smartphone,
   Zap,
@@ -18,8 +17,8 @@ import {
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { THEME_CONFIGS } from '../../utils/themes';
-import { AdhanSoundId, NotificationSoundId, ThemeId } from '../../types';
-import { playAdhan, playNotificationSound, stopActiveAudio, setMasterVolume } from '../../utils/sound';
+import { NotificationSoundId, ThemeId } from '../../types';
+import { playNotificationSound, stopActiveAudio, setMasterVolume } from '../../utils/sound';
 import { haptic, setHapticsEnabled } from '../../utils/haptics';
 
 export const ThemeSelectorModal: React.FC = () => {
@@ -32,7 +31,7 @@ export const ThemeSelectorModal: React.FC = () => {
   } = useApp();
 
   const isAr = settings.language !== 'en';
-  const [activeTab, setActiveTab] = useState<'adhan' | 'notifications' | 'themes'>('adhan');
+  const [activeTab, setActiveTab] = useState<'notifications' | 'themes'>('notifications');
   const [currentlyPlayingId, setCurrentlyPlayingId] = useState<string | null>(null);
 
   if (!isThemeModalOpen) return null;
@@ -45,23 +44,6 @@ export const ThemeSelectorModal: React.FC = () => {
       theme: config.isDark ? 'dark' : 'light',
     });
     showToast(isAr ? `تم تغيير الثيم إلى "${config.nameAr}" 🎨` : `Theme changed to "${config.nameEn}" 🎨`, 'success');
-  };
-
-  const handleSelectAdhan = (soundId: AdhanSoundId, previewName: string) => {
-    haptic.prayer();
-    updateSettings({ adhanSound: soundId });
-    if (soundId === 'silent') {
-      stopActiveAudio();
-      setCurrentlyPlayingId(null);
-      showToast(isAr ? 'تم كتم صوت الأذان 🔇' : 'Adhan audio muted 🔇', 'info');
-      return;
-    }
-
-    setCurrentlyPlayingId(soundId);
-    playAdhan(soundId, settings.volume ?? 0.8, () => {
-      setCurrentlyPlayingId(null);
-    });
-    showToast(isAr ? `تم اختيار: ${previewName}` : `Selected: ${previewName}`, 'info');
   };
 
   const handleSelectNotification = (soundId: NotificationSoundId, previewName: string) => {
@@ -115,81 +97,6 @@ export const ThemeSelectorModal: React.FC = () => {
     setCurrentlyPlayingId(null);
     setIsThemeModalOpen(false);
   };
-
-  const ADHAN_OPTIONS: { id: AdhanSoundId; titleAr: string; titleEn: string; descAr: string; descEn: string; badge: string }[] = [
-    {
-      id: 'makkah',
-      titleAr: 'أذان المسجد الحرام بمكة المكرمة 🕋',
-      titleEn: 'Makkah Al-Mukarramah Adhan 🕋',
-      descAr: 'الأذان الروحاني لمؤذني الحرم المكي الشريف',
-      descEn: 'Spiritual recitation from the Holy Kaaba in Makkah',
-      badge: 'الأكثر شعبية 🌟',
-    },
-    {
-      id: 'madinah',
-      titleAr: 'أذان المسجد النبوي الشريف 🕌',
-      titleEn: 'Madinah Al-Munawwarah Adhan 🕌',
-      descAr: 'الأذان النبوي العذب الهادئ من مدينة رسول الله',
-      descEn: 'Gentle, melodious Adhan from the Prophet\'s Mosque',
-      badge: 'عذب وهادئ 🕊️',
-    },
-    {
-      id: 'alaqsa',
-      titleAr: 'أذان المسجد الأقصى المبارك 🕌',
-      titleEn: 'Al-Aqsa Mosque Adhan 🕌',
-      descAr: 'أذان بيت المقدس الشريف بنبرة مهيبة مؤثرة',
-      descEn: 'Majestic historic Adhan from Holy Jerusalem',
-      badge: 'مهيب 🏛️',
-    },
-    {
-      id: 'egypt-refaat',
-      titleAr: 'أذان مصر التاريخي - الشيخ محمد رفعت 🇪🇬',
-      titleEn: 'Classic Egyptian Adhan - Sheikh Mohamed Refaat 🇪🇬',
-      descAr: 'صوت الإذاعة المصرية الخالد وأجواء رمضان العريقة',
-      descEn: 'Iconic golden-age Egyptian radio recitation',
-      badge: 'تاريخي أصيل 📻',
-    },
-    {
-      id: 'abdulbasit',
-      titleAr: 'أذان الشيخ عبد الباسط عبد الصمد 🎙️',
-      titleEn: 'Sheikh Abdulbasit Abdulsamad 🎙️',
-      descAr: 'صوت مكة الشجي ونقاء التلاوة المصرية',
-      descEn: 'Masterful, legendary recitation with soaring maqam',
-      badge: 'صوت خالد 🎙️',
-    },
-    {
-      id: 'takbeer-short',
-      titleAr: 'تكبيرات الأذان (تنبيه سريع) ⚡',
-      titleEn: 'Adhan Takbeerat (Short Alert) ⚡',
-      descAr: 'التكبيرات الأولى فقط - مثالي للأوقات السريعة',
-      descEn: 'Opening Takbeerat only - quick & concise',
-      badge: 'سريع ومختصر ⚡',
-    },
-    {
-      id: 'nasr-tobbar',
-      titleAr: 'ابتهال وأذان الشيخ نصر الدين طوبار 📿',
-      titleEn: 'Sheikh Nasruddin Tobar 📿',
-      descAr: 'نغمات الفجر والابتهالات الإيمانية المؤثرة',
-      descEn: 'Spiritual dawn ibtihalat and heartfelt Adhan',
-      badge: 'إيماني شجي 📿',
-    },
-    {
-      id: 'fajr-special',
-      titleAr: 'أذان الفجر (الصلاة خير من النوم) 🌅',
-      titleEn: 'Special Fajr Adhan 🌅',
-      descAr: 'أذان الفجر المميز بترديد عبارة الصلاة خير من النوم',
-      descEn: 'Fajr dawn Adhan with Prayer is better than sleep',
-      badge: 'خاص بالفجر 🌅',
-    },
-    {
-      id: 'silent',
-      titleAr: 'صامت (بدون صوت أذان) 🔇',
-      titleEn: 'Silent (Mute Adhan) 🔇',
-      descAr: 'تنبيه بصري واهتزاز تفاعلي بدون صوت',
-      descEn: 'Visual and haptic vibration only without audio',
-      badge: 'كتم الصوت 🔇',
-    },
-  ];
 
   const NOTIFICATION_OPTIONS: { id: NotificationSoundId; titleAr: string; titleEn: string; descAr: string; descEn: string; icon: string }[] = [
     {
@@ -311,11 +218,11 @@ export const ThemeSelectorModal: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="text-base sm:text-lg font-black flex items-center gap-1.5" style={{ color: 'var(--text-color)' }}>
-                    <span>{isAr ? 'استوديو الأصوات والمظهر والاهتزازات' : 'Audio, Haptics & Themes Studio'}</span>
+                    <span>{isAr ? 'استوديو الإشعارات والمظهر والاهتزازات' : 'Notifications, Haptics & Themes Studio'}</span>
                     <Sparkles className="w-4 h-4 text-amber-400" />
                   </h3>
                   <p className="text-[11px] sm:text-xs text-slate-400">
-                    {isAr ? 'خصص أصوات الأذان ونغمات الإشعارات والاهتزازات وثيم التطبيق' : 'Customize Adhan voices, notification tones, haptics & themes'}
+                    {isAr ? 'خصص نغمات الإشعارات والاهتزازات وثيم التطبيق' : 'Customize notification tones, haptics & themes'}
                   </p>
                 </div>
               </div>
@@ -341,23 +248,8 @@ export const ThemeSelectorModal: React.FC = () => {
               </div>
             </div>
 
-            {/* Navigation Tabs (3 Dedicated Sections) */}
+            {/* Navigation Tabs (2 Dedicated Sections) */}
             <div className="flex items-center p-1 rounded-2xl bg-slate-900/80 border border-slate-800 mb-5 gap-1 shadow-inner">
-              <button
-                onClick={() => {
-                  haptic.selection();
-                  setActiveTab('adhan');
-                }}
-                className={`flex-1 py-2 px-2.5 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 ${
-                  activeTab === 'adhan'
-                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30 scale-[1.02]'
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                <span>🕌</span>
-                <span>{isAr ? 'صوت الأذان' : 'Adhan Sounds'}</span>
-              </button>
-
               <button
                 onClick={() => {
                   haptic.selection();
@@ -370,7 +262,7 @@ export const ThemeSelectorModal: React.FC = () => {
                 }`}
               >
                 <span>🔔</span>
-                <span>{isAr ? 'صوت الإشعارات' : 'Notification Tones'}</span>
+                <span>{isAr ? 'نغمات الإشعارات والتنبيه' : 'Notification Tones'}</span>
               </button>
 
               <button
@@ -388,71 +280,6 @@ export const ThemeSelectorModal: React.FC = () => {
                 <span>{isAr ? 'الثيمات والمظهر' : 'Visual Themes'}</span>
               </button>
             </div>
-
-            {/* TAB CONTENT 1: ADHAN SOUNDS */}
-            {activeTab === 'adhan' && (
-              <div className="space-y-3">
-                <div className="flex items-center justify-between px-1">
-                  <span className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
-                    <Radio className="w-4 h-4 text-indigo-400" />
-                    <span>{isAr ? 'اختر صوت المؤذن المفضل لمواقيت الصلاة:' : 'Select your favorite Adhan reciter:'}</span>
-                  </span>
-                  <span className="text-[11px] text-indigo-400 font-bold bg-indigo-500/10 px-2 py-0.5 rounded-full border border-indigo-500/20">
-                    {isAr ? 'دعم الأوفلاين ⚡' : '100% Offline Ready ⚡'}
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-[48vh] overflow-y-auto pr-1">
-                  {ADHAN_OPTIONS.map((item) => {
-                    const isSelected = (settings.adhanSound || 'makkah') === item.id;
-                    const isPlaying = currentlyPlayingId === item.id;
-
-                    return (
-                      <button
-                        key={item.id}
-                        onClick={() => handleSelectAdhan(item.id, isAr ? item.titleAr : item.titleEn)}
-                        className={`p-3 rounded-2xl border text-start flex flex-col justify-between gap-2 transition-all relative overflow-hidden group ${
-                          isSelected
-                            ? 'border-indigo-500 bg-indigo-950/40 shadow-lg shadow-indigo-500/15 ring-1 ring-indigo-500'
-                            : 'border-slate-800 bg-slate-900/50 hover:bg-slate-800/60 hover:border-slate-700'
-                        }`}
-                      >
-                        <div className="flex items-start justify-between gap-2 w-full">
-                          <div className="flex items-center gap-2">
-                            <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-transform ${
-                              isPlaying ? 'bg-indigo-600 text-white animate-bounce' : 'bg-slate-800 text-indigo-400'
-                            }`}>
-                              {isPlaying ? <Square className="w-3.5 h-3.5 fill-white" /> : <Play className="w-3.5 h-3.5 fill-current" />}
-                            </div>
-                            <div>
-                              <h4 className="text-xs font-black text-slate-100 leading-tight">
-                                {isAr ? item.titleAr : item.titleEn}
-                              </h4>
-                              <p className="text-[10px] text-slate-400 leading-tight mt-0.5">
-                                {isAr ? item.descAr : item.descEn}
-                              </p>
-                            </div>
-                          </div>
-
-                          {isSelected && (
-                            <span className="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-sm">
-                              <Check className="w-3 h-3 stroke-[3]" />
-                            </span>
-                          )}
-                        </div>
-
-                        <div className="flex items-center justify-between w-full pt-1 border-t border-slate-800/40 text-[10px]">
-                          <span className="font-semibold text-amber-400/90">{item.badge}</span>
-                          <span className="text-slate-400 group-hover:text-indigo-300 transition-colors">
-                            {isPlaying ? (isAr ? 'جاري التشغيل...' : 'Playing...') : (isAr ? 'اضغط للاستماع 🎧' : 'Click to preview 🎧')}
-                          </span>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
 
             {/* TAB CONTENT 2: NOTIFICATION TONES */}
             {activeTab === 'notifications' && (
